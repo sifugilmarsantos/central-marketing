@@ -5,8 +5,5 @@ pages_build_output_dir = "dist"
 [vars]
 VITE_SUPABASE_URL = "https://dydivsegegbxqwfdubbd.supabase.co"
 VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5ZGl2c2VnZWdieHF3ZmR1YmJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MTAxNzMsImV4cCI6MjEwNjI4NjE3M30.pG-9dIOkjfW7dLPpE5wGtQACZHsFj6MRRkX2zI5trjw"
-# Chaves públicas da IA para injeção automática no build do Vite:
-VITE_GEMINI_PREFIX = "AQ."
-VITE_GEMINI_SUFFIX = "Ab8RN6IW6yXQ-CTSP38gLaNhDbPEgxAzYkcqQi7pCVrAtCeKVw"
-VITE_GROQ_PREFIX = "gsk_"
-VITE_GROQ_SUFFIX = "zndq1fcfCTsSUZvbGDK8WGdyb3FYSfJ5C4Sr8aUrVbfCmXMOJdNP"
+VITE_GEMINI_API_KEY = "AQ.Ab8RN6IW6yXQ-CTSP38gLaNhDbPEgxAzYkcqQi7pCVrAtCeKVw"
+VITE_GROQ_API_KEY = "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"
