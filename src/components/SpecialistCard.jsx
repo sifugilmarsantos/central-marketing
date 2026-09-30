@@ -18,6 +18,7 @@ import {
   Quote,
   Eye,
   Layers,
+  RefreshCw,
 } from 'lucide-react';
 
 const iconMap = {
@@ -29,7 +30,13 @@ const iconMap = {
   TrendingUp: TrendingUp,
 };
 
-export default function SpecialistCard({ card, isActive, isProcessing }) {
+export default function SpecialistCard({
+  card,
+  isActive,
+  isProcessing,
+  onRegenerate,
+  isRegenerating,
+}) {
   const [copied, setCopied] = useState(false);
 
   const IconComponent = iconMap[card.iconName] || Layers;
@@ -111,28 +118,67 @@ export default function SpecialistCard({ card, isActive, isProcessing }) {
             </div>
           </div>
 
-          {/* Copy Button */}
-          <button
-            onClick={handleCopy}
-            title="Copiar dados deste especialista"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex-shrink-0 ${
-              copied
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                : 'bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700/80 hover:border-slate-600 active:scale-95'
-            }`}
-          >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
-                <span className="text-emerald-400">Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200" />
-                <span>Copiar Conteúdo</span>
-              </>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end flex-shrink-0">
+            {/* Quick Regeneration Button for Card 02 and Card 04 */}
+            {onRegenerate && (card.stepNumber === 2 || card.stepNumber === 4) && (
+              <button
+                type="button"
+                onClick={() => onRegenerate(card.stepNumber)}
+                disabled={isRegenerating || isProcessing}
+                title={
+                  card.stepNumber === 2
+                    ? 'Reescrever nova variação de copy para esta campanha'
+                    : 'Recriar nova direção de arte e prompt visual para esta campanha'
+                }
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border shadow-sm ${
+                  card.stepNumber === 2
+                    ? 'bg-purple-600/20 hover:bg-purple-600/35 text-purple-200 border-purple-500/40 hover:border-purple-300'
+                    : 'bg-amber-600/20 hover:bg-amber-600/35 text-amber-200 border-amber-500/40 hover:border-amber-300'
+                } ${
+                  isRegenerating
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'active:scale-95'
+                }`}
+              >
+                {isRegenerating ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Gerando...</span>
+                  </>
+                ) : (
+                  <>
+                    {card.stepNumber === 2
+                      ? '🔄 Reescrever Variação de Copy'
+                      : '🔄 Recriar Nova Direção de Arte / Prompt'}
+                  </>
+                )}
+              </button>
             )}
-          </button>
+
+            {/* Copy Button */}
+            <button
+              onClick={handleCopy}
+              title="Copiar dados deste especialista"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex-shrink-0 ${
+                copied
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                  : 'bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700/80 hover:border-slate-600 active:scale-95'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
+                  <span className="text-emerald-400">Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200" />
+                  <span>Copiar Conteúdo</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

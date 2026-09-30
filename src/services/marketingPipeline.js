@@ -128,6 +128,15 @@ Gancho (Hook): "${rawGancho}"`,
 export async function executeStep2({ theme, brandProfile, step1Data }) {
   const brandContext = getBrandContext(brandProfile);
 
+  const copyNarratives = [
+    'Enfoque em transformação pessoal, autoconfiança sólida e superação da timidez.',
+    'Enfoque em desenvolvimento infantil, foco nos estudos e disciplina sem rigidez punitiva.',
+    'Enfoque em descompressão, saúde mental, condicionamento físico e alívio do estresse.',
+    'Enfoque em autodefesa inteligente, autocontrole emocional e postura preventiva.',
+    'Enfoque na tradição autêntica do Kung Fu, linhagem marcial e mentoria direta do Sifu no Kwoon.',
+  ];
+  const chosenNarrative = copyNarratives[Math.floor(Math.random() * copyNarratives.length)];
+
   const systemPrompt = `Você é Lucas Menezes, Copywriter Especialista em Resposta Direta e Narrativas Persuasivas.
 Você recebe a estratégia de conteúdo e cria textos altamente envolventes, autênticos e orientados à conversão.
 Retorne estritamente um JSON com as chaves: "textos_arte" (array de 4 a 5 strings), "legenda" (string completa), "cta" (string).
@@ -140,13 +149,14 @@ Formato: ${step1Data.formato}
 Gancho: ${step1Data.gancho}
 
 TEMA: "${theme}"
+DIRETRIZ NARRATIVA PRIORITÁRIA PARA ESTA VARIAÇÃO: ${chosenNarrative}
 MARCA E DIRETRIZES:
 ${brandContext}
 
 ATENÇÃO RIGOROSA DE VOCABULÁRIO:
 - Use exclusivamente a terminologia do Kung Fu tradicional chinês: "Kwoon" (espaço/sala de treino), "Katis" (formas/sequências) e "Sifu" (mestre/professor).
 - É ESTRITAMENTE PROIBIDO usar termos japoneses como "Dojo", "Kata", "Katas" ou "Sensei".
-- Redija todo o conteúdo rigorosamente no padrão culto de Português do Brasil.
+- Redija todo o conteúdo rigorosamente no padrão culto de Português do Brasil com quebras de parágrafo e alta retenção.
 
 Gere o copy completo em JSON com:
 {
@@ -314,6 +324,73 @@ ${rawMelhorias.map((m) => `✓ ${m}`).join('\n')}`,
 }
 
 /**
+ * ARSENAL DE ESTILOS VISUAIS PARA O DIRETOR DE ARTE (CARD 04)
+ * Sorteio aleatório entre 6 direções estritamente distintas para garantir não-repetição
+ */
+export const ART_DIRECTOR_STYLES = [
+  {
+    id: 'editorial_esportivo_movimento',
+    name: 'Fotografia Editorial Esportiva em Movimento Rápido',
+    camera: 'Sony A1 com lente Sony FE 24-70mm f/2.8 GM II (shutter speed 1/1200s, tracking contínuo)',
+    angle: 'Ângulo dinâmico e baixo (low-angle Dutch tilt) capturando a impulsão e velocidade',
+    lighting: 'Luz natural lateral intensa cortada por janelas amplas do Kwoon contemporâneo, partículas de magnésio iluminadas em rim light dourada',
+    paletteName: 'Energia & Alta Performance',
+    description: 'Ação dinâmica em Kwoon contemporâneo com piso emborrachado preto fosco, praticante em salto ou chute giratório perfeitamente alinhado, foco congelado em altíssima definição no estilo Nike/Red Bull Sports Photography.',
+    midjourneyGuidance: 'High-speed action sports editorial photography, dynamic low angle Dutch tilt, crisp motion freeze at 1/1200s, Sony A1 24-70mm f/2.8 GM II, volumetric daylight streaming through modern martial arts Kwoon windows, authentic Kung Fu uniform, athletic intensity, golden rim light'
+  },
+  {
+    id: 'retrato_cinematografico_closeup',
+    name: 'Retrato Cinematográfico Close-Up Emocional',
+    camera: 'Hasselblad H6D-100c com lente HC 100mm f/2.2 (foco cravado na íris)',
+    angle: 'Eye-level close-up dramático e intimista, enquadramento fechado destacando a expressão facial',
+    lighting: 'Chiaroscuro suave com softbox octagonal de 120cm a 45 graus, contraluz sutil delineando os ombros e fios de cabelo',
+    paletteName: 'Resiliência & Determinação Emocional',
+    description: 'Foco cirúrgico na determinação dos olhos do praticante/criança, microgotas de suor realistas refletindo luz tênue, faixa amarrada na cintura ou mãos enfaixadas, expressando superação e confiança inabalável.',
+    midjourneyGuidance: 'Intimate cinematic emotional close-up portrait, Hasselblad H6D-100c HC 100mm f/2.2, dramatic chiaroscuro studio softbox lighting, shallow depth of field, sharp focus on intense determined eyes, subtle perspiration on brow, authentic traditional Chinese Kung Fu discipline, hyper-detailed skin texture'
+  },
+  {
+    id: 'documental_postural_sifu',
+    name: 'Documental Autêntico / Correção Postural Guiada pelo Sifu',
+    camera: 'Canon EOS R5 C com lente RF 50mm f/1.2L USM (perspectiva humana e orgânica)',
+    angle: 'Plano médio em três quartos (three-quarter medium shot), capturando a conexão mestre-discípulo',
+    lighting: 'Luz ambiente acolhedora e difusa de final de tarde (golden hour), sombras suaves e atmosfera de respeito e acolhimento',
+    paletteName: 'Tradição, Sabedoria & Linhagem',
+    description: 'Cena documental autêntica de ensino tradicional: o Sifu experiente e paciente ajustando a postura de punho ou base (Ma Bu) de uma criança no Kwoon, transmitindo segurança, disciplina e carinho pedagógico.',
+    midjourneyGuidance: 'Documentary storytelling photography, authentic Chinese Kung Fu Kwoon, experienced revered Sifu gently guiding and correcting a young student horse stance Ma Bu posture, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful master-disciple connection, natural candid expressions'
+  },
+  {
+    id: 'treino_equipamentos_intensidade',
+    name: 'Treino Prático de Alta Intensidade com Equipamentos',
+    camera: 'Nikon Z9 com lente Nikkor Z 85mm f/1.2 S (nitidez extrema nos pontos de impacto)',
+    angle: 'Ângulo médio lateral dinâmico, revelando a biomecânica do golpe contra o alvo',
+    lighting: 'Iluminação esportiva de alta precisão com dois refletores LED em contra-eixo e luz de recorte branca 5600K',
+    paletteName: 'Foco, Impacto & Agilidade Motora',
+    description: 'Praticante em treino explosivo com manoplas de foco, saco de areia pesado ou bastão infantil (Gun), demonstrando coordenação motora refinada, reflexos rápidos e vigor físico contagiante no centro de treinamento.',
+    midjourneyGuidance: 'High-intensity martial arts training session, striking focus mitts and sandbags in a modern Chinese Kung Fu gym, dynamic impact frame, Nikon Z9 85mm f/1.2 S, crisp sports studio lighting with white rim lights, kinetic energy, authentic technique and agile footwork'
+  },
+  {
+    id: 'poster_minimalista_espaco_negativo',
+    name: 'Pôster Publicitário Minimalista com Amplo Espaço Negativo',
+    camera: 'Fujifilm GFX 100 II com lente GF 110mm f/2 R LM WR (formato médio ultra-nítido)',
+    angle: 'Composição assimétrica em regra dos terços com 60% de espaço negativo clean para inserção de títulos e logos',
+    lighting: 'Luz zenital dramática (overhead spotlight / rim light) sobre fundo gradiente escuro e minimalista',
+    paletteName: 'Minimalismo Editorial de Luxo',
+    description: 'Silhueta elegante e perfeitamente escupida de uma base marcial clássica (ex: Gong Bu ou Xie Bu), posicionada no terço inferior direito, com espaço generoso e limpo para diagramação e tipografia institucional.',
+    midjourneyGuidance: 'Minimalist luxury commercial sports advertising poster, solitary martial artist performing sharp Kung Fu stance silhouette, generous clean dark negative space for typography, Fujifilm GFX 100 II 110mm f/2, dramatic single overhead spotlight, sophisticated dark gradient background, ultra-clean composition'
+  },
+  {
+    id: 'tradicao_solene_saudacao',
+    name: 'Tradição Marcial Solene / Saudação Bingbu Li & Baishi',
+    camera: 'Leica SL2 com lente Summilux-SL 50mm f/1.4 ASPH (textura orgânica e tons cinematográficos)',
+    angle: 'Plano frontal solene e simétrico, transmitindo solenidade, código moral e linhagem marcial',
+    lighting: 'Luz suave de lanternas e painéis reflexivos, tons quentes de âmbar e bronze realçando os detalhes do uniforme',
+    paletteName: 'Honra, Código Marcial & Reverência',
+    description: 'O ritual solene da saudação tradicional de Kung Fu (Bingbu Li: punho direito cerrado contra a palma esquerda espalmada em sinal de respeito mútuo), olhar sereno e focado, honrando o código Wude e os valores do Kwoon.',
+    midjourneyGuidance: 'Solemn traditional Chinese martial arts salute Bingbu Li, closed right fist meeting open left palm in reverence, Leica SL2 Summilux 50mm f/1.4, warm amber lanterns and directional bronze rim light, dignified gaze, honoring the ancient Wude martial code in a refined authentic Kwoon'
+  }
+];
+
+/**
  * ETAPA 4: Diretor de Arte
  */
 export async function executeStep4({ theme, brandProfile, step1Data }) {
@@ -321,28 +398,29 @@ export async function executeStep4({ theme, brandProfile, step1Data }) {
   const primaryColor = brandProfile?.primary_color || '#111827';
   const accentColor = brandProfile?.accent_color || '#EAB308';
 
+  // Sorteio dinâmico estrito de um dos 6 estilos visuais para variação radical
+  const selectedStyle = ART_DIRECTOR_STYLES[Math.floor(Math.random() * ART_DIRECTOR_STYLES.length)];
+
   const systemPrompt = `Você é Rodrigo Fontes, Diretor de Arte Sênior e Especialista em Criação Visual com IA (Midjourney v6.1 / Flux Pro) para Campanhas Publicitárias de Alta Performance.
 Sua missão é desenvolver a identidade visual, hierarquia de layout, paleta de cores precisa e um PROMPT CINEMATOGRÁFICO EM INGLÊS dinâmico, hiper-realista e estritamente personalizado para a campanha.
 
 DIRETRIZES FUNDAMENTAIS DO DIRETOR DE ARTE:
 1. DINAMISMO OBRIGATÓRIO E PROIBIÇÃO ESTRITA DE REPETIÇÃO:
-   - Você NUNCA deve sugerir o mesmo cenário ou o estilo clichê e genérico de "crianças em templo antigo", monges em montanhas ou orientalismo caricato dos anos 70/80 (a menos que a campanha peça explicitamente uma temática histórica).
-   - O prompt gerado para a IA de Imagem DEVE VARIAR DRASTICAMENTE de acordo com o objetivo da campanha.
-   - Cenário padrão: Academia contemporânea, centro de treinamento esportivo moderno ou Kwoon autêntico e profissional (piso de tatame/emborrachado moderno, iluminação de ponta, sacos de pancada, espelhos, banners marciais discretos e elegantes, atmosfera real e acolhedora).
+   - Você NUNCA deve sugerir o mesmo cenário ou o estilo clichê e genérico de "crianças em templo antigo", monges em montanhas ou orientalismo caricato dos anos 70/80.
+   - O prompt gerado para a IA de Imagem DEVE SEGUIR ESTREITAMENTE O ESTILO VISUAL SORTEADO PARA ESTA EXECUÇÃO:
+     * ESTILO VISUAL SORTEADO: "${selectedStyle.name}"
+     * CÂMERA & LENTE OBRIGATÓRIA: ${selectedStyle.camera}
+     * ENQUADRAMENTO & ÂNGULO: ${selectedStyle.angle}
+     * ILUMINAÇÃO RECOMENDADA: ${selectedStyle.lighting}
+     * CONCEITO DE CENA: ${selectedStyle.description}
+     * DIRETRIZ MIDJOURNEY: ${selectedStyle.midjourneyGuidance}
 
-2. ARSENAL DE DIREÇÕES DE ARTE (Alterne e selecione a mais adequada ao tema):
-   - FOTOGRAFIA DOCUMENTAL/ESPORTIVA CONTEMPORÂNEA (estilo editorial esportivo de alto rendimento como Nike, Under Armour ou National Geographic Sports): treino real, praticantes/crianças de várias idades em ação dinâmica, foco seletivo em movimento rápido, atletas reais suando o uniforme tradicional de treino.
-   - CLOSE-UPS EMOCIONAIS E SOLENES: expressões autênticas de determinação, resiliência, conquista de graduação de faixa, respeito mútuo ou a tradicional saudação marcial de Kung Fu (Bingbu Li / Baishi: punho direito cerrado contra a palma esquerda espalmada).
-   - CENAS DE TREINO PRÁTICO E DINÂMICO: exercícios com manoplas de foco, circuitos funcionais e motores, agilidade, trabalho com sacos de areia ou prática com bastão tradicional chinês (Gun) adaptado para turmas infantis.
-   - DESIGN DE PÔSTER COM ESPAÇO NEGATIVO LIMPO: composição equilibrada com amplo espaço negativo (clean negative space) para inserção de títulos, tipografia e logomarcas, iluminação dramática de estúdio / chiaroscuro publicitário.
+2. ESPECIFICAÇÕES TÉCNICAS OBRIGATÓRIAS NO PROMPT MIDJOURNEY / FLUX:
+   - Especifique a câmera, lente e ângulo indicados acima.
+   - Cenário: Kwoon contemporâneo profissional ou centro de treinamento autêntico de Kung Fu chinês.
+   - Parâmetros técnicos obrigatórios no final do prompt: "--ar 4:5 --v 6.1 --style raw".
 
-3. ESPECIFICAÇÕES TÉCNICAS OBRIGATÓRIAS NO PROMPT MIDJOURNEY / FLUX:
-   - Tipo de câmera e lente profissional: especifique modelos reais como "Sony A7IV", "Canon EOS R5" ou "Hasselblad H6D"; lentes como "85mm f/1.4 GM portrait lens" (para retratos nítidos com desfoque de fundo cremoso) ou "35mm wide angle prime lens" (para amplitude e imersão).
-   - Estilo fotográfico: fotografia real de alta resolução, cinematográfico realista, textura de pele natural (subsurface scattering), sem aspecto plástico, sem filtro 3D, sem caricaturas ou orientalismo exagerado.
-   - Iluminação: iluminação natural de academia/estúdio, luz volumétrica de janelas amplas (volumetric daylight streaming through gym windows), rim light dourada ou luz dramática de alto contraste.
-   - Parâmetros técnicos no final do prompt: inclua "--ar 4:5 --v 6.1 --style raw".
-
-4. CONFORMIDADE CULTURAL KUNG FU:
+3. CONFORMIDADE CULTURAL KUNG FU:
    - Use rigorosamente "Kwoon" (ou traditional Chinese martial arts training hall) para o espaço de treino, "Sifu" para o mestre e "Katis" para as formas.
    - É TERMINANTEMENTE PROIBIDO usar termos japoneses como "Dojo", "Kata" ou "Sensei" em qualquer parte da resposta.
 
@@ -358,34 +436,39 @@ GANCHO (HOOK): "${step1Data.gancho}"
 CORES INSTITUCIONAIS: Primária ${primaryColor}, Acento ${accentColor}
 ${brandContext}
 
+ESTILO VISUAL OBRIGATÓRIO PARA ESTA VARIAÇÃO:
+Nome: ${selectedStyle.name}
+Câmera/Lente: ${selectedStyle.camera}
+Ângulo: ${selectedStyle.angle}
+Iluminação: ${selectedStyle.lighting}
+Inspiração Midjourney: ${selectedStyle.midjourneyGuidance}
+
 INSTRUÇÕES RIGOROSAS:
-1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}". NUNCA repita o mesmo clichê genérico de "crianças em templo antigo".
-2. Selecione a melhor direção de arte para este briefing específico (fotografia documental esportiva, close-up emocional, treino prático com manoplas/circuitos, ou pôster com espaço negativo limpo).
-3. No "prompt_midjourney" (redigido em inglês cinematográfico e detalhado):
-   - Especifique a câmera e lente (ex: Sony A7IV, 85mm f/1.4 GM lens ou 35mm wide angle prime).
-   - Descreva a iluminação autêntica (ex: natural gym window lighting, cinematic softbox, golden rim light).
-   - Descreva o cenário contemporâneo e profissional de Kwoon moderno.
-   - Detalhe a ação, postura corporal precisa e expressão facial autêntica.
-   - Finalize com: 8k resolution, photorealistic commercial sports photography, natural textures --ar 4:5 --v 6.1 --style raw
-4. Em "layout_diretrizes" (em Português do Brasil): descreva a hierarquia visual, tipografia sugerida, paleta e uso estratégico do espaço negativo.
+1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}" e ao estilo sorteado "${selectedStyle.name}". NUNCA repita templos antigos ou orientalismo caricato.
+2. No "prompt_midjourney" (redigido em inglês cinematográfico e detalhado):
+   - Incorpore: ${selectedStyle.midjourneyGuidance}
+   - Especifique: ${selectedStyle.camera}, ${selectedStyle.lighting}
+   - Detalhe a ação, postura corporal precisa e expressão autêntica no Kwoon.
+   - Finalize com: 8k resolution, photorealistic commercial sports photography, natural skin texture --ar 4:5 --v 6.1 --style raw
+3. Em "layout_diretrizes" (em Português do Brasil): descreva a hierarquia visual, tipografia sugerida, paleta e uso estratégico do espaço negativo.
 
 Retorne um JSON com:
 {
   "paleta": [
-    { "name": "Nome Cor 1 (Base)", "hex": "${primaryColor}" },
-    { "name": "Nome Cor 2 (Destaque)", "hex": "${accentColor}" },
-    { "name": "Nome Cor 3 (Acento)", "hex": "#06B6D4" },
-    { "name": "Nome Cor 4 (Contraste)", "hex": "#FFFFFF" }
+    { "name": "${selectedStyle.paletteName} (Base)", "hex": "${primaryColor}" },
+    { "name": "${selectedStyle.paletteName} (Destaque)", "hex": "${accentColor}" },
+    { "name": "Acento Dinâmico", "hex": "#06B6D4" },
+    { "name": "Contraste Puro", "hex": "#FFFFFF" }
   ],
   "layout_diretrizes": "Hierarquia visual detalhada, tipografia recomendada, composição de cena e distribuição do espaço negativo em Português do Brasil.",
-  "prompt_midjourney": "Cinematic photo prompt in English with camera, lens, lighting, modern Kwoon scene, authentic action and parameters --ar 4:5 --v 6.1 --style raw"
+  "prompt_midjourney": "Cinematic photo prompt in English incorporating ${selectedStyle.name}, camera, lens, lighting, authentic action and parameters --ar 4:5 --v 6.1 --style raw"
 }`;
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
   const paletaFormatted = (Array.isArray(data.paleta) ? data.paleta : [
-    { name: 'Base Primária', hex: primaryColor },
-    { name: 'Destaque', hex: accentColor },
+    { name: `${selectedStyle.paletteName} (Base)`, hex: primaryColor },
+    { name: `${selectedStyle.paletteName} (Destaque)`, hex: accentColor },
     { name: 'Ciano Acento', hex: '#06B6D4' },
     { name: 'Branco Texto', hex: '#FFFFFF' },
   ]).map((c) => ({
@@ -397,7 +480,7 @@ Retorne um JSON com:
   const rawLayout = sanitizeKungFuTerms(data.layout_diretrizes) || 'Design contemporâneo de alto contraste com tipografia marcante e espaço negativo equilibrado.';
   const rawPrompt =
     sanitizeKungFuTerms(data.prompt_midjourney) ||
-    'Cinematic commercial sports photography of modern authentic Chinese Kung Fu Kwoon, martial artists in focused training, Sony A7IV 85mm f/1.4 GM lens, natural volumetric gym window lighting, photorealistic 8k --ar 4:5 --v 6.1 --style raw';
+    `${selectedStyle.midjourneyGuidance}, authentic martial artists in modern Kwoon, ${selectedStyle.camera}, ${selectedStyle.lighting}, photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
 
   const card = {
     id: 'card-4',
@@ -411,6 +494,11 @@ Retorne um JSON com:
     iconName: 'Palette',
     aiProvider: provider,
     sections: [
+      {
+        label: 'Direção Visual Sorteada (Variabilidade Ativa)',
+        content: `🎨 ${selectedStyle.name} • Setup: ${selectedStyle.camera}`,
+        type: 'highlight',
+      },
       {
         label: 'Guia Cromático (Paleta de Cores)',
         content: paletaFormatted,
@@ -429,6 +517,9 @@ Retorne um JSON com:
     ],
     copyPayload: `[DIREÇÃO DE ARTE]
 Especialista: Rodrigo Fontes (${provider})
+Estilo Visual: ${selectedStyle.name}
+Setup Técnico: ${selectedStyle.camera} | ${selectedStyle.angle}
+
 Cores:
 ${paletaFormatted.map((p) => `- ${p.name}: ${p.hex}`).join('\n')}
 
@@ -441,7 +532,7 @@ ${rawPrompt}`,
 
   return {
     card,
-    rawData: { ...data, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
+    rawData: { ...data, selectedStyle, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
     provider,
   };
 }

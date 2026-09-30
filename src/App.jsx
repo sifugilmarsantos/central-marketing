@@ -27,6 +27,7 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState('');
   const [executionError, setExecutionError] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [regeneratingCardId, setRegeneratingCardId] = useState(null);
 
   // Handle selecting a saved campaign from history
   const handleSelectCampaign = (record) => {
@@ -185,6 +186,65 @@ export default function App() {
     }
   };
 
+  // Handle isolated single-card regeneration (Card 02 or Card 04)
+  const handleRegenerateCard = async (stepNumber) => {
+    if (isRunning || regeneratingCardId) return;
+
+    setRegeneratingCardId(stepNumber);
+
+    try {
+      const activeTheme =
+        theme?.trim() ||
+        'Aulas de Kung Fu Infantil: foco, disciplina e autoconfiança em Londrina';
+
+      // Extract Step 1 strategic data from current card-1 state
+      const step1Card = cardsData.find((c) => c.stepNumber === 1);
+      const step1Obj =
+        step1Card?.sections?.find((s) => s.label.includes('Objetivo'))?.content ||
+        'Posicionamento de autoridade e captação de novos alunos qualificados';
+      const step1Fmt =
+        step1Card?.sections?.find((s) => s.label.includes('Formato'))?.content ||
+        'Carrossel Dinâmico de 5 lâminas (1080x1350 - proporção 4:5)';
+      const step1Gnc =
+        step1Card?.sections?.find((s) => s.label.includes('Gancho'))?.content ||
+        `“Descubra como o Kung Fu desenvolve foco inabalável, respeito e disciplina autêntica.”`;
+      const step1Data = {
+        objetivo: step1Obj,
+        formato: step1Fmt,
+        gancho: step1Gnc,
+      };
+
+      if (stepNumber === 2) {
+        showToast('🔄 Reescrevendo variação de copy com nova abordagem narrativa...');
+        const res2 = await executeStep2({
+          theme: activeTheme,
+          brandProfile,
+          step1Data,
+        });
+        setCardsData((prev) =>
+          prev.map((c) => (c.stepNumber === 2 ? res2.card : c))
+        );
+        showToast(`✅ Variação de copy reescrita com sucesso (${res2.provider})!`);
+      } else if (stepNumber === 4) {
+        showToast('🎨 Criando nova direção de arte e prompt visual exclusivo...');
+        const res4 = await executeStep4({
+          theme: activeTheme,
+          brandProfile,
+          step1Data,
+        });
+        setCardsData((prev) =>
+          prev.map((c) => (c.stepNumber === 4 ? res4.card : c))
+        );
+        showToast(`✅ Nova direção de arte gerada com sucesso (${res4.provider})!`);
+      }
+    } catch (err) {
+      console.error(`Erro ao regenerar etapa ${stepNumber}:`, err);
+      showToast('⚠️ Ocorreu um aviso na regeneração, mas a estabilidade foi preservada.');
+    } finally {
+      setRegeneratingCardId(null);
+    }
+  };
+
   // Scroll to a specific card when clicking the pipeline step
   const handleStepClick = (stepId) => {
     const el = document.getElementById(`card-${stepId}`);
@@ -314,6 +374,8 @@ Central de Marketing © 2026 - Todos os direitos reservados.`;
           cards={cardsData}
           currentStep={currentStep}
           isRunning={isRunning}
+          onRegenerate={handleRegenerateCard}
+          regeneratingCardId={regeneratingCardId}
         />
       </main>
 

@@ -2,7 +2,13 @@ import React from 'react';
 import SpecialistCard from './SpecialistCard';
 import { Layers, Sparkles, CheckCircle, ShieldCheck } from 'lucide-react';
 
-export default function ResultsGrid({ cards, currentStep, isRunning }) {
+export default function ResultsGrid({
+  cards,
+  currentStep,
+  isRunning,
+  onRegenerate,
+  regeneratingCardId,
+}) {
   return (
     <section className="w-full flex flex-col gap-6">
       {/* Section Header */}
@@ -38,6 +44,7 @@ export default function ResultsGrid({ cards, currentStep, isRunning }) {
         {cards.map((card) => {
           const isActive = currentStep === card.stepNumber;
           const isProcessing = isRunning && currentStep === card.stepNumber;
+          const isRegenerating = regeneratingCardId === card.stepNumber;
 
           return (
             <SpecialistCard
@@ -45,6 +52,8 @@ export default function ResultsGrid({ cards, currentStep, isRunning }) {
               card={card}
               isActive={isActive}
               isProcessing={isProcessing}
+              onRegenerate={onRegenerate}
+              isRegenerating={isRegenerating}
             />
           );
         })}
