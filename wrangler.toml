@@ -1,0 +1,10 @@
+name = "central-marketing"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[vars]
+# Configure as variáveis de ambiente sensíveis no painel do Cloudflare Pages:
+# VITE_SUPABASE_URL
+# VITE_SUPABASE_ANON_KEY
+# VITE_GEMINI_API_KEY
+# VITE_GROQ_API_KEY
