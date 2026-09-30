@@ -18,7 +18,7 @@ import HistoryModal from './components/HistoryModal';
 import { Sparkles, CheckCircle2, AlertCircle, RefreshCw, Zap } from 'lucide-react';
 
 export default function App() {
-  const [theme, setTheme] = useState(initialCampaignData.theme);
+  const [theme, setTheme] = useState('');
   const [cardsData, setCardsData] = useState(initialCampaignData.cards);
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(6); // Default 6 means all completed initially

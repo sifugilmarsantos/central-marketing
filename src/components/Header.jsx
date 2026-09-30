@@ -277,7 +277,7 @@ export default function Header({
               rows={3}
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
-              placeholder="Ex: Lançamento de uma nova campanha para artes marciais..."
+              placeholder="Ex: Aulas de Kung Fu Infantil: foco, disciplina e autoconfiança em Londrina..."
               className="w-full rounded-xl bg-slate-950/80 border border-slate-750 p-4 text-slate-100 placeholder-slate-500 text-sm sm:text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all resize-y min-h-[90px] shadow-inner"
             />
           </div>

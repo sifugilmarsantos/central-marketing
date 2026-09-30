@@ -1,5 +1,5 @@
 export const initialCampaignData = {
-  theme: "Lançamento da plataforma Central de Marketing com IA para agências e PMEs",
+  theme: "",
   createdAt: "2026-09-29T09:45:00Z",
   status: "completed",
   pipelineSteps: [
