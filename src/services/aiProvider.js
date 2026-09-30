@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Environment variables
+// Leitura segura das variáveis de ambiente com fallbacks (|| '') para não quebrar a aplicação
 const geminiApiKey =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
   (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) ||
   '';
+
 const groqApiKey =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) ||
   (typeof process !== 'undefined' && process.env?.VITE_GROQ_API_KEY) ||
