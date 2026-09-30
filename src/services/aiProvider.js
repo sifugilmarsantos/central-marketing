@@ -37,22 +37,25 @@ function cleanAndParseJSON(text) {
 }
 
 /**
- * Call Groq API with fallback model support
+ * Call Groq API with fallback model support (Llama 3.3 70B, Llama 3.1 8B, GPT-OSS)
  */
 async function callGroqAPI({ systemPrompt, prompt, preferredModel = 'llama-3.3-70b-versatile' }) {
   if (!groqApiKey) {
     throw new Error('VITE_GROQ_API_KEY não configurada.');
   }
 
+  // Modelos com alta cota e suporte a JSON mode (eliminado Qwen com limite restrito de 1000 OTPM)
   const modelsToTry = [
     preferredModel,
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
     'openai/gpt-oss-120b',
-    'qwen/qwen3.8-27b',
   ];
 
+  const uniqueModels = [...new Set(modelsToTry)];
   let lastError = null;
 
-  for (const model of modelsToTry) {
+  for (const model of uniqueModels) {
     try {
       console.log(`[AI Provider] Tentando Groq com modelo '${model}'...`);
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -107,39 +110,100 @@ async function callGroqAPI({ systemPrompt, prompt, preferredModel = 'llama-3.3-7
 }
 
 /**
- * Call Gemini API with timeout
+ * Call Gemini API with timeout, official SDK and resilient direct REST fallback
+ * Compatible with Google AI Studio 'AQ.' keys:
+ * - Uses x-goog-api-key header and/or ?key= query parameter
+ * - NEVER uses 'Authorization: Bearer' which Google rejects with ACCESS_TOKEN_TYPE_UNSUPPORTED
+ * - Instantiates official SDK: new GoogleGenerativeAI(geminiApiKey)
  */
 async function callGeminiAPI({ systemPrompt, prompt, modelName = 'gemini-1.5-flash' }) {
   if (!geminiApiKey) {
     throw new Error('VITE_GEMINI_API_KEY não configurada.');
   }
 
-  const genAI = new GoogleGenerativeAI(geminiApiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.7,
-    },
-    systemInstruction: `${systemPrompt || 'Você é um especialista em marketing.'} Responda estritamente em JSON válido.`,
-  });
+  const cleanKey = geminiApiKey.trim();
 
-  // Timeout promise (10 seconds)
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Timeout na requisição do Gemini (10s)')), 10000)
-  );
+  // 1. Tenta via SDK oficial @google/generative-ai
+  try {
+    const genAI = new GoogleGenerativeAI(cleanKey);
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.7,
+      },
+      systemInstruction: `${systemPrompt || 'Você é um especialista em marketing.'} Responda estritamente em JSON válido.`,
+    });
 
-  const requestPromise = model.generateContent(prompt);
-  const result = await Promise.race([requestPromise, timeoutPromise]);
-  const text = result.response.text();
-  const parsed = cleanAndParseJSON(text);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout na requisição do Gemini SDK (12s)')), 12000)
+    );
 
-  return {
-    data: parsed,
-    provider: 'Processado via Gemini',
-    modelUsed: modelName,
-    rawText: text,
-  };
+    const requestPromise = model.generateContent(prompt);
+    const result = await Promise.race([requestPromise, timeoutPromise]);
+    const text = result.response.text();
+    const parsed = cleanAndParseJSON(text);
+
+    return {
+      data: parsed,
+      provider: 'Processado via Google Gemini (SDK)',
+      modelUsed: modelName,
+      rawText: text,
+    };
+  } catch (sdkError) {
+    console.warn(
+      `[AI Provider] SDK Gemini encontrou um aviso (${sdkError.message}). Executando requisição direta REST com header x-goog-api-key e ?key=...`
+    );
+
+    // 2. Fallback REST direto com x-goog-api-key e ?key= (sem Authorization Bearer)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': cleanKey,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }],
+          },
+        ],
+        systemInstruction: {
+          parts: [
+            {
+              text: `${systemPrompt || 'Você é um especialista em marketing.'} Responda estritamente em JSON válido.`,
+            },
+          ],
+        },
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.7,
+        },
+      }),
+    });
+
+    const resData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(resData?.error?.message || `Google Gemini HTTP ${response.status}`);
+    }
+
+    const text = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('Resposta vazia da API REST do Google Gemini');
+    }
+
+    const parsed = cleanAndParseJSON(text);
+    return {
+      data: parsed,
+      provider: 'Processado via Google Gemini (REST)',
+      modelUsed: modelName,
+      rawText: text,
+    };
+  }
 }
 
 /**
