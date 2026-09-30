@@ -39,7 +39,10 @@ function cleanAndParseJSON(text) {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Call Groq API with fallback model support (Llama 3.3 70B & Llama 3.1 8B)
+ * Call Groq API with official model support:
+ * 1. llama-3.3-70b-versatile
+ * 2. llama3-70b-8192
+ * 3. llama3-8b-8192 (contingência rápida)
  * Includes automatic retry with 3.5s backoff on HTTP 429 (Rate Limit).
  */
 async function callGroqAPI({ systemPrompt, prompt, preferredModel = 'llama-3.3-70b-versatile' }) {
@@ -47,24 +50,58 @@ async function callGroqAPI({ systemPrompt, prompt, preferredModel = 'llama-3.3-7
     throw new Error('VITE_GROQ_API_KEY não configurada.');
   }
 
-  // Modelos estritamente prioritários para evitar estourar cota TPM:
-  // 1º: llama-3.3-70b-versatile (alta qualidade e raciocínio para marketing)
-  // 2º: llama-3.1-8b-instant (cota altíssima de tokens e resposta instantânea)
-  const modelsToTry = [
-    preferredModel,
+  // Modelos estritamente suportados e homologados pela Groq:
+  const allowedGroqModels = [
     'llama-3.3-70b-versatile',
-    'llama-3.1-8b-instant',
+    'llama3-70b-8192',
+    'llama3-8b-8192',
   ];
 
+  // Garante a ordem prioritária sem identificadores inválidos ou obsoletos
+  const modelsToTry = [
+    preferredModel,
+    ...allowedGroqModels,
+  ].filter((m) => allowedGroqModels.includes(m));
+
   const uniqueModels = [...new Set(modelsToTry)];
+  if (uniqueModels.length === 0) {
+    uniqueModels.push('llama-3.3-70b-versatile', 'llama3-70b-8192', 'llama3-8b-8192');
+  }
+
   let lastError = null;
 
   for (const model of uniqueModels) {
-    const maxRetries = 2; // Tentativa inicial + 1 retry com backoff caso receba 429
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`[AI Provider] Executando Groq modelo '${model}' (tentativa ${attempt}/${maxRetries})...`);
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    try {
+      console.log(`[AI Provider] Tentando Groq com modelo '${model}'...`);
+      let response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${groqApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: `${systemPrompt || 'Você é um especialista em marketing.'} Você DEVE SEMPRE responder APENAS com um objeto JSON válido, sem texto introdutório nem conclusivo.`,
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.7,
+        }),
+      });
+
+      // Se receber 429 (Rate Limit), executa um backoff automático de 3.5s antes de decidir
+      if (response.status === 429) {
+        console.warn(`[AI Provider] Groq 429 (Rate Limit) no modelo '${model}'. Pausando 3.5s para backoff antes da segunda tentativa...`);
+        await delay(3500);
+
+        response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${groqApiKey}`,
@@ -86,53 +123,39 @@ async function callGroqAPI({ systemPrompt, prompt, preferredModel = 'llama-3.3-7
             temperature: 0.7,
           }),
         });
-
-        // Tratamento com backoff automático de 3.5 segundos para HTTP 429 (Rate Limit)
-        if (response.status === 429) {
-          const resErr = await response.json().catch(() => ({}));
-          const errMsg = resErr?.error?.message || 'Rate limit atingido (429)';
-          console.warn(`[AI Provider] Groq 429 no modelo '${model}'. Pausando 3.5s para backoff... (${errMsg})`);
-
-          if (attempt < maxRetries) {
-            await delay(3500); // Pausa/espera automática antes do retry
-            continue; // Tenta o mesmo modelo novamente
-          } else {
-            await delay(2000); // Pausa breve antes de avançar para o modelo mais leve
-            throw new Error(`Groq 429 Rate Limit no modelo ${model}: ${errMsg}`);
-          }
-        }
-
-        const resData = await response.json();
-
-        if (!response.ok) {
-          throw new Error(resData?.error?.message || `Groq HTTP ${response.status}`);
-        }
-
-        const content = resData.choices?.[0]?.message?.content;
-        if (!content) {
-          throw new Error('Resposta vazia do Groq');
-        }
-
-        const parsed = cleanAndParseJSON(content);
-        return {
-          data: parsed,
-          provider: 'Processado via Groq Fallback',
-          modelUsed: model,
-          rawText: content,
-        };
-      } catch (err) {
-        console.warn(`[AI Provider] Falha na tentativa ${attempt} do modelo '${model}':`, err.message);
-        lastError = err;
-        if (err.message?.includes('429') && attempt < maxRetries) {
-          await delay(3500);
-        } else {
-          break; // Sai do retry loop deste modelo e tenta o próximo
-        }
       }
+
+      const resData = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errMsg = resData?.error?.message || `Groq HTTP ${response.status}`;
+        console.warn(`[AI Provider] Groq modelo '${model}' falhou (${errMsg}). Tentando imediatamente o próximo modelo da lista...`);
+        lastError = new Error(`Groq [${model}]: ${errMsg}`);
+        continue; // Tenta IMEDIATAMENTE o próximo modelo!
+      }
+
+      const content = resData?.choices?.[0]?.message?.content;
+      if (!content) {
+        console.warn(`[AI Provider] Groq modelo '${model}' retornou resposta vazia. Tentando o próximo modelo...`);
+        lastError = new Error(`Groq [${model}]: Resposta vazia`);
+        continue; // Tenta IMEDIATAMENTE o próximo modelo!
+      }
+
+      const parsed = cleanAndParseJSON(content);
+      return {
+        data: parsed,
+        provider: 'Processado via Groq Fallback',
+        modelUsed: model,
+        rawText: content,
+      };
+    } catch (err) {
+      console.warn(`[AI Provider] Erro no modelo Groq '${model}':`, err.message, '- tentando imediatamente o próximo modelo da lista...');
+      lastError = err;
+      // Continua para o próximo modelo sem travar
     }
   }
 
-  throw lastError || new Error('Todos os modelos prioritários do Groq falharam.');
+  throw lastError || new Error('Todos os modelos homologados da Groq falharam.');
 }
 
 /**
