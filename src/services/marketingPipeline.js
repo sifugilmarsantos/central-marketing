@@ -5,12 +5,13 @@ import { extractThemeSemantics } from '../utils/themeSemantics.js';
 /**
  * Helper para construir o contexto institucional da marca
  */
-export function getBrandContext(brandProfile) {
-  if (!brandProfile) {
-    return 'Marca e Negócio Contemporâneo de Alta Qualidade';
+export function getBrandContext(brandProfile, isBrandActive = true) {
+  if (!isBrandActive || !brandProfile) {
+    return '[MODO MULTI-NICHO / AGY-AGNÓSTICO ATIVADO: Perfil de marca institucional DESATIVADO. A campanha é 100% livre e deve se orientar exclusivamente pelo tema livre inserido na caixa de texto. O nicho, o público-alvo, as dores e o tom de voz devem ser totalmente inferidos a partir do tema, sem qualquer menção ou restrição a marcas ou empresas externas.]';
   }
   return `
 - Nome da Marca: ${brandProfile.brand_name || 'Empresa / Negócio'}
+- Nicho/Segmento: ${brandProfile.niche || brandProfile.segment || 'Serviços & Produtos'}
 - Cidade/Localização: ${brandProfile.city || 'Brasil'}
 - Público-Alvo Institucional: ${brandProfile.target_audience || 'Clientes potenciais e público qualificado'}
 - Tom de Voz Institucional: ${brandProfile.tone_of_voice || 'Profissional, acolhedor e persuasivo'}
@@ -21,9 +22,10 @@ export function getBrandContext(brandProfile) {
 /**
  * ETAPA 1: Estrategista de Conteúdo
  */
-export async function executeStep1({ theme, brandProfile }) {
-  const brandContext = getBrandContext(brandProfile);
-  const semantics = extractThemeSemantics(theme, brandProfile);
+export async function executeStep1({ theme, brandProfile, isBrandActive = true }) {
+  const effectiveBrand = isBrandActive ? brandProfile : null;
+  const brandContext = getBrandContext(brandProfile, isBrandActive);
+  const semantics = extractThemeSemantics(theme, effectiveBrand);
 
   const systemPrompt = `Você é a Dra. Helena Vasconcelos, Estrategista de Conteúdo Sênior e Head de Posicionamento de Marcas.
 Sua missão é estruturar a base estratégica de uma campanha de marketing de alto impacto adaptada perfeitamente ao nicho e público da campanha.
@@ -99,9 +101,10 @@ Gancho (Hook): "${rawGancho}"`,
 /**
  * ETAPA 2: Copywriter
  */
-export async function executeStep2({ theme, brandProfile, step1Data }) {
-  const brandContext = getBrandContext(brandProfile);
-  const semantics = extractThemeSemantics(theme, brandProfile);
+export async function executeStep2({ theme, brandProfile, step1Data, isBrandActive = true }) {
+  const effectiveBrand = isBrandActive ? brandProfile : null;
+  const brandContext = getBrandContext(brandProfile, isBrandActive);
+  const semantics = extractThemeSemantics(theme, effectiveBrand);
 
   const copyNarratives = [
     'Enfoque em solução de dor imediata, economia de tempo e alívio de frustração do cliente.',
@@ -212,9 +215,10 @@ CTA: ${rawCta}`,
 /**
  * ETAPA 3: Revisor Textual
  */
-export async function executeStep3({ theme, brandProfile, step2Data }) {
-  const brandContext = getBrandContext(brandProfile);
-  const semantics = extractThemeSemantics(theme, brandProfile);
+export async function executeStep3({ theme, brandProfile, step2Data, isBrandActive = true }) {
+  const effectiveBrand = isBrandActive ? brandProfile : null;
+  const brandContext = getBrandContext(brandProfile, isBrandActive);
+  const semantics = extractThemeSemantics(theme, effectiveBrand);
 
   const systemPrompt = `Você é a Profª. Beatriz Alencar, Consultora Linguística e Revisora Textual em Português do Brasil (PT-BR).
 Sua missão é garantir perfeição gramatical, cadência rítmica mobile, clareza, concisão e adequação ao nicho da campanha (${semantics.niche}).
@@ -375,12 +379,13 @@ export const ART_DIRECTOR_STYLES = [
 /**
  * ETAPA 4: Diretor de Arte
  */
-export async function executeStep4({ theme, brandProfile, step1Data }) {
-  const brandContext = getBrandContext(brandProfile);
-  const primaryColor = brandProfile?.primary_color || '#111827';
-  const accentColor = brandProfile?.accent_color || '#EAB308';
+export async function executeStep4({ theme, brandProfile, step1Data, isBrandActive = true }) {
+  const effectiveBrand = isBrandActive ? brandProfile : null;
+  const brandContext = getBrandContext(brandProfile, isBrandActive);
+  const primaryColor = isBrandActive && brandProfile?.primary_color ? brandProfile.primary_color : '#111827';
+  const accentColor = isBrandActive && brandProfile?.accent_color ? brandProfile.accent_color : '#EAB308';
 
-  const semantics = extractThemeSemantics(theme, brandProfile);
+  const semantics = extractThemeSemantics(theme, effectiveBrand);
   const selectedStyle = ART_DIRECTOR_STYLES[Math.floor(Math.random() * ART_DIRECTOR_STYLES.length)];
 
   const systemPrompt = `Você é Rodrigo Fontes, Diretor de Arte Sênior e Especialista em Criação Visual com IA (Midjourney v6.1 / Flux Pro) para Campanhas Publicitárias de Alta Performance.
@@ -521,9 +526,10 @@ ${rawPrompt}`,
 /**
  * ETAPA 5: Controle de Qualidade (QA)
  */
-export async function executeStep5({ theme, brandProfile }) {
-  const brandContext = getBrandContext(brandProfile);
-  const semantics = extractThemeSemantics(theme, brandProfile);
+export async function executeStep5({ theme, brandProfile, isBrandActive = true }) {
+  const effectiveBrand = isBrandActive ? brandProfile : null;
+  const brandContext = getBrandContext(brandProfile, isBrandActive);
+  const semantics = extractThemeSemantics(theme, effectiveBrand);
 
   const systemPrompt = `Você é Camila Siqueira, Lead de QA e Validação Técnica de Mídia Digital.
 Sua missão é checar especificações técnicas (proporção 4:5 e 9:16, safe-zones, contraste WCAG AAA), coerência da mensagem para o nicho de ${semantics.niche} e sugerir os 3 melhores horários de publicação.
@@ -613,10 +619,11 @@ ${rawHorarios.map((h) => `${h.day} às ${h.time} (${h.reason})`).join('\n')}`,
 /**
  * ETAPA 6: Gestor de Tráfego Pago
  */
-export async function executeStep6({ theme, brandProfile, step1Data }) {
-  const brandContext = getBrandContext(brandProfile);
-  const semantics = extractThemeSemantics(theme, brandProfile);
-  const city = brandProfile?.city || 'Brasil';
+export async function executeStep6({ theme, brandProfile, step1Data, isBrandActive = true }) {
+  const effectiveBrand = isBrandActive ? brandProfile : null;
+  const brandContext = getBrandContext(brandProfile, isBrandActive);
+  const semantics = extractThemeSemantics(theme, effectiveBrand);
+  const city = isBrandActive && brandProfile?.city ? brandProfile.city : (semantics.city && semantics.city !== 'Brasil' ? semantics.city : 'Brasil');
 
   const systemPrompt = `Você é Thiago Ramos, Gestor de Tráfego Pago e Performance Media Buyer no Meta Ads e Google Ads.
 Sua missão é segmentar público-alvo com precisão para o nicho de ${semantics.niche}, definir objetivo de campanha no Meta Ads e estipular orçamento diário para teste e escala.
@@ -633,7 +640,7 @@ ${brandContext}
 Retorne um JSON com:
 {
   "publico_alvo": "Segmentação detalhada: faixa de idade, gênero, interesses específicos de compra e comportamentos para ${semantics.niche}",
-  "raio_geografico": "Raio geográfico específico em ${city} ou segmentação estadual/nacional",
+  "raio_geografico": "Raio geográfico específico em ${city} ou segmentação regional/nacional coerente com o tema",
   "objetivo_campanha": "Objetivo técnico de conversão no Meta Ads (ex: Geração de Cadastros / Mensagens WhatsApp)",
   "orcamento": {
     "testPhase": "R$ 40,00 / dia",
@@ -646,7 +653,10 @@ Retorne um JSON com:
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
   const rawPublico = data.publico_alvo || `Público qualificado interessado em ${semantics.niche} (${semantics.audience}).`;
-  const rawRaio = data.raio_geografico || `Raio de 15km a 25km em ${city} e arredores`;
+  const defaultGeo = isBrandActive && brandProfile?.city
+    ? `Raio de 15km a 25km em ${brandProfile.city} e arredores`
+    : `Segmentação regional ou nacional alinhada ao tema "${theme}" (polos metropolitanos de alta intenção de compra)`;
+  const rawRaio = data.raio_geografico || defaultGeo;
   const rawObjetivo = data.objetivo_campanha || 'Geração de Cadastros Qualificados / Conversões no Meta Ads.';
 
   const card = {

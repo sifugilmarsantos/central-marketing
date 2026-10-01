@@ -41,10 +41,89 @@ export default function App() {
     showToast(`📋 Campanha "${record.topic || 'selecionada'}" carregada nos cards!`);
   };
 
-  // Supabase brand_profile state
-  const [brandProfile, setBrandProfile] = useState(null);
+  // Switch de Ativação do Perfil de Marca [ON / OFF] com persistência local
+  const [isBrandActive, setIsBrandActive] = useState(() => {
+    try {
+      const saved = localStorage.getItem('central_marketing_brand_active');
+      return saved !== null ? saved === 'true' : false; // Padrão Multi-Nicho / Neutro
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleBrandActive = (active) => {
+    setIsBrandActive(active);
+    try {
+      localStorage.setItem('central_marketing_brand_active', String(active));
+    } catch (err) {
+      console.warn('Erro ao salvar no localStorage:', err);
+    }
+    if (active) {
+      showToast(`🏢 Perfil de Marca ATIVADO: ${brandProfile?.brand_name || 'Empresa'}`);
+    } else {
+      showToast('🌐 Modo Neutro Multi-Nicho ATIVADO (100% agnóstico ao tema)');
+    }
+  };
+
+  // Supabase brand_profile state com fallback local
+  const [brandProfile, setBrandProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('central_marketing_custom_brand');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [brandLoading, setBrandLoading] = useState(true);
   const [brandError, setBrandError] = useState(null);
+
+  // Salvar alterações de perfil (localmente e no Supabase)
+  const handleSaveBrand = async (newProfile) => {
+    setBrandProfile(newProfile);
+    setIsBrandActive(true);
+    try {
+      localStorage.setItem('central_marketing_custom_brand', JSON.stringify(newProfile));
+      localStorage.setItem('central_marketing_brand_active', 'true');
+    } catch (err) {
+      console.warn('Erro ao salvar no localStorage:', err);
+    }
+
+    try {
+      if (newProfile.id) {
+        await supabase
+          .from('brand_profile')
+          .update({
+            brand_name: newProfile.brand_name,
+            city: newProfile.city,
+            target_audience: newProfile.target_audience,
+            tone_of_voice: newProfile.tone_of_voice,
+            primary_color: newProfile.primary_color || '#111827',
+            accent_color: newProfile.accent_color || '#EAB308',
+          })
+          .eq('id', newProfile.id);
+      } else {
+        const { data } = await supabase
+          .from('brand_profile')
+          .insert([{
+            brand_name: newProfile.brand_name,
+            city: newProfile.city,
+            target_audience: newProfile.target_audience,
+            tone_of_voice: newProfile.tone_of_voice,
+            primary_color: newProfile.primary_color || '#111827',
+            accent_color: newProfile.accent_color || '#EAB308',
+          }])
+          .select();
+        if (data && data[0]) {
+          setBrandProfile(data[0]);
+          localStorage.setItem('central_marketing_custom_brand', JSON.stringify(data[0]));
+        }
+      }
+      showToast(`✅ Perfil da empresa "${newProfile.brand_name}" salvo e ativado!`);
+    } catch (err) {
+      console.warn('Salvo localmente (Supabase indisponível):', err);
+      showToast(`✅ Perfil da empresa "${newProfile.brand_name}" salvo localmente e ativado!`);
+    }
+  };
 
   // Fetch brand_profile from Supabase
   const fetchBrandProfile = async () => {
@@ -59,11 +138,13 @@ export default function App() {
         .limit(1);
 
       if (error) {
-        console.error('Erro ao consultar brand_profile no Supabase:', error);
+        console.warn('Aviso ao consultar brand_profile no Supabase:', error.message);
         setBrandError(error.message);
       } else if (data && data.length > 0) {
-        const brand = data[0];
-        setBrandProfile(brand);
+        const savedCustom = localStorage.getItem('central_marketing_custom_brand');
+        if (!savedCustom) {
+          setBrandProfile(data[0]);
+        }
       }
     } catch (err) {
       console.error('Falha de conexão com Supabase:', err);
@@ -100,7 +181,7 @@ export default function App() {
       // ETAPA 1: Estrategista de Conteúdo
       // ==========================================
       setStatusMessage('Etapa 1/6: Estrategista de Conteúdo definindo objetivo e gancho...');
-      const res1 = await executeStep1({ theme, brandProfile });
+      const res1 = await executeStep1({ theme, brandProfile, isBrandActive });
       setCardsData((prev) => prev.map((c) => (c.stepNumber === 1 ? res1.card : c)));
       showToast(`✅ Etapa 1 concluída (${res1.provider})!`);
 
@@ -110,7 +191,7 @@ export default function App() {
       setCurrentStep(2);
       setStatusMessage('Etapa 2/6: Copywriter redigindo lâminas, legenda e CTA...');
       showToast('✍️ Executando Etapa 2: Copywriting...');
-      const res2 = await executeStep2({ theme, brandProfile, step1Data: res1.rawData });
+      const res2 = await executeStep2({ theme, brandProfile, step1Data: res1.rawData, isBrandActive });
       setCardsData((prev) => prev.map((c) => (c.stepNumber === 2 ? res2.card : c)));
       showToast(`✅ Etapa 2 concluída (${res2.provider})!`);
 
@@ -120,7 +201,7 @@ export default function App() {
       setCurrentStep(3);
       setStatusMessage('Etapa 3/6: Revisor Textual validando ortografia, fluidez e tom...');
       showToast('🧐 Executando Etapa 3: Revisão Textual PT-BR...');
-      const res3 = await executeStep3({ theme, brandProfile, step2Data: res2.rawData });
+      const res3 = await executeStep3({ theme, brandProfile, step2Data: res2.rawData, isBrandActive });
       setCardsData((prev) => prev.map((c) => (c.stepNumber === 3 ? res3.card : c)));
       showToast(`✅ Etapa 3 concluída (${res3.provider})!`);
 
@@ -130,7 +211,7 @@ export default function App() {
       setCurrentStep(4);
       setStatusMessage('Etapa 4/6: Diretor de Arte gerando paleta, composição e prompt IA...');
       showToast('🎨 Executando Etapa 4: Direção de Arte e Prompt Visual...');
-      const res4 = await executeStep4({ theme, brandProfile, step1Data: res1.rawData });
+      const res4 = await executeStep4({ theme, brandProfile, step1Data: res1.rawData, isBrandActive });
       setCardsData((prev) => prev.map((c) => (c.stepNumber === 4 ? res4.card : c)));
       showToast(`✅ Etapa 4 concluída (${res4.provider})!`);
 
@@ -140,7 +221,7 @@ export default function App() {
       setCurrentStep(5);
       setStatusMessage('Etapa 5/6: Controle de Qualidade verificando proporções e horários...');
       showToast('🔍 Executando Etapa 5: Validação Técnica e Compliance QA...');
-      const res5 = await executeStep5({ theme, brandProfile });
+      const res5 = await executeStep5({ theme, brandProfile, isBrandActive });
       setCardsData((prev) => prev.map((c) => (c.stepNumber === 5 ? res5.card : c)));
       showToast(`✅ Etapa 5 concluída (${res5.provider})!`);
 
@@ -150,7 +231,7 @@ export default function App() {
       setCurrentStep(6);
       setStatusMessage('Etapa 6/6: Gestor de Tráfego segmentando público e orçamentos...');
       showToast('📈 Executando Etapa 6: Tráfego Pago e Performance...');
-      const res6 = await executeStep6({ theme, brandProfile, step1Data: res1.rawData });
+      const res6 = await executeStep6({ theme, brandProfile, step1Data: res1.rawData, isBrandActive });
       setCardsData((prev) => prev.map((c) => (c.stepNumber === 6 ? res6.card : c)));
       showToast(`✅ Etapa 6 concluída (${res6.provider})!`);
 
@@ -220,6 +301,7 @@ export default function App() {
           theme: activeTheme,
           brandProfile,
           step1Data,
+          isBrandActive,
         });
         setCardsData((prev) =>
           prev.map((c) => (c.stepNumber === 2 ? res2.card : c))
@@ -231,6 +313,7 @@ export default function App() {
           theme: activeTheme,
           brandProfile,
           step1Data,
+          isBrandActive,
         });
         setCardsData((prev) =>
           prev.map((c) => (c.stepNumber === 4 ? res4.card : c))
@@ -256,11 +339,11 @@ export default function App() {
   // Copy full campaign dossier (all 6 cards combined)
   const handleCopyAll = async () => {
     try {
-      const brandHeader = brandProfile
+      const brandHeader = isBrandActive && brandProfile
         ? `Marca: ${brandProfile.brand_name} (${brandProfile.city})
 Público-Alvo: ${brandProfile.target_audience}
 Tom de Voz: ${brandProfile.tone_of_voice}\n`
-        : '';
+        : 'Modo: Multi-Nicho Livre (100% Agnóstico a Marcas Institucionais)\n';
 
       const fullDossier = `=====================================================
 CENTRAL DE MARKETING - DOSSIÊ COMPLETO DE CAMPANHA
@@ -322,6 +405,9 @@ Central de Marketing © 2026 - Todos os direitos reservados.`;
           onCopyAll={handleCopyAll}
           copiedAll={copiedAll}
           brandProfile={brandProfile}
+          isBrandActive={isBrandActive}
+          onToggleActive={handleToggleBrandActive}
+          onSaveBrand={handleSaveBrand}
           brandLoading={brandLoading}
           brandError={brandError}
           onRefreshBrand={fetchBrandProfile}
@@ -386,8 +472,10 @@ Central de Marketing © 2026 - Todos os direitos reservados.`;
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="font-semibold text-slate-300">Central de Marketing</span>
             <span>— Redundância Gemini ↔ Groq + Supabase</span>
-            {brandProfile && (
+            {isBrandActive && brandProfile ? (
               <span className="text-amber-400 font-medium">({brandProfile.brand_name})</span>
+            ) : (
+              <span className="text-cyan-400 font-medium">(Modo Multi-Nicho Ativo)</span>
             )}
           </div>
 

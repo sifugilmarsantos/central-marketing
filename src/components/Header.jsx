@@ -18,6 +18,7 @@ import {
   History,
 } from 'lucide-react';
 import { sampleThemes } from '../data/mockMarketingData';
+import BrandProfile from './BrandProfile';
 
 export default function Header({
   theme,
@@ -27,6 +28,9 @@ export default function Header({
   onCopyAll,
   copiedAll,
   brandProfile,
+  isBrandActive,
+  onToggleActive,
+  onSaveBrand,
   brandLoading,
   brandError,
   onRefreshBrand,
@@ -35,7 +39,7 @@ export default function Header({
   const handleApplyBrandTheme = () => {
     if (brandProfile) {
       setTheme(
-        `Campanha de Matrículas Abertas - ${brandProfile.brand_name} em ${brandProfile.city}: Turmas para crianças e adolescentes (disciplina e foco) e adultos (condicionamento e defesa pessoal)`
+        `Campanha Institucional - ${brandProfile.brand_name} em ${brandProfile.city}: Atendimento de excelência, diferenciais exclusivos e captação de clientes qualificados`
       );
     }
   };
@@ -102,150 +106,17 @@ export default function Header({
         </div>
       </div>
 
-      {/* Brand Profile Banner (Supabase Data) */}
-      <div className="relative rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 border border-slate-800 p-4 sm:p-5 shadow-xl backdrop-blur-xl">
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/70 pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <Building2 className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Perfil da Marca (Supabase)
-                  </span>
-                  {brandLoading && (
-                    <span className="flex items-center gap-1 text-[11px] text-blue-400 animate-pulse">
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                      Carregando dados...
-                    </span>
-                  )}
-                  {brandProfile && !brandLoading && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Sincronizado
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {brandProfile && (
-              <button
-                type="button"
-                onClick={handleApplyBrandTheme}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all self-start sm:self-auto active:scale-95"
-                title="Preencher o campo de campanha com os dados desta marca"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Usar Tema da Marca</span>
-              </button>
-            )}
-          </div>
-
-          {/* Brand Info Display */}
-          {brandLoading ? (
-            <div className="animate-pulse space-y-2 py-2">
-              <div className="h-4 bg-slate-800 rounded w-1/3" />
-              <div className="h-3 bg-slate-800/60 rounded w-2/3" />
-            </div>
-          ) : brandError ? (
-            <div className="flex items-center justify-between text-xs text-rose-400 bg-rose-950/20 border border-rose-900/30 p-3 rounded-xl">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                <span>Erro ao carregar dados do Supabase: {brandError}</span>
-              </div>
-              {onRefreshBrand && (
-                <button
-                  onClick={onRefreshBrand}
-                  className="underline hover:text-rose-300 ml-2"
-                >
-                  Tentar novamente
-                </button>
-              )}
-            </div>
-          ) : brandProfile ? (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 pt-1 text-xs">
-              {/* Brand Name & City */}
-              <div className="md:col-span-4 bg-slate-950/50 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-between">
-                <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-                  Marca & Localização
-                </span>
-                <div className="mt-1">
-                  <h4 className="text-base font-bold text-white tracking-tight flex items-center gap-1.5">
-                    {brandProfile.brand_name}
-                  </h4>
-                  <div className="flex items-center gap-1.5 text-slate-300 mt-1">
-                    <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="font-medium">{brandProfile.city}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Target Audience */}
-              <div className="md:col-span-4 bg-slate-950/50 p-3 rounded-xl border border-slate-800/60 flex flex-col">
-                <div className="flex items-center gap-1.5 text-slate-400 font-semibold mb-1">
-                  <Users className="w-3.5 h-3.5 text-blue-400" />
-                  <span className="text-[11px] uppercase tracking-wider">Público-Alvo</span>
-                </div>
-                <p className="text-slate-300 leading-relaxed line-clamp-3">
-                  {brandProfile.target_audience}
-                </p>
-              </div>
-
-              {/* Tone of voice & Colors */}
-              <div className="md:col-span-4 bg-slate-950/50 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-1.5 text-slate-400 font-semibold mb-1">
-                    <Volume2 className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="text-[11px] uppercase tracking-wider">Tom de Voz</span>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed line-clamp-2">
-                    {brandProfile.tone_of_voice}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-slate-800/60 pt-2 mt-1">
-                  <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                    <Palette className="w-3 h-3 text-amber-400" />
-                    Cores Institucionais:
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800"
-                      title="Cor Primária"
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full border border-slate-600"
-                        style={{ backgroundColor: brandProfile.primary_color }}
-                      />
-                      <span className="text-[10px] font-mono text-slate-300">
-                        {brandProfile.primary_color}
-                      </span>
-                    </div>
-
-                    <div
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800"
-                      title="Cor de Destaque"
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full border border-slate-600"
-                        style={{ backgroundColor: brandProfile.accent_color }}
-                      />
-                      <span className="text-[10px] font-mono text-slate-300">
-                        {brandProfile.accent_color}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-xs text-slate-400">Nenhum perfil de marca encontrado no Supabase.</p>
-          )}
-        </div>
-      </div>
+      {/* Brand Profile Component (Multi-Empresas, ON/OFF Switch & Edição Direta) */}
+      <BrandProfile
+        brandProfile={brandProfile}
+        isBrandActive={isBrandActive}
+        onToggleActive={onToggleActive}
+        onSaveBrand={onSaveBrand}
+        onApplyBrandTheme={handleApplyBrandTheme}
+        brandLoading={brandLoading}
+        brandError={brandError}
+        onRefreshBrand={onRefreshBrand}
+      />
 
       {/* Command Center Card */}
       <div className="relative rounded-2xl bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 p-5 sm:p-6 border border-slate-800 shadow-2xl backdrop-blur-xl">
@@ -288,14 +159,14 @@ export default function Header({
               <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
               <span>Sugestões rápidas:</span>
             </div>
-            {brandProfile && (
+            {isBrandActive && brandProfile && (
               <button
                 type="button"
                 onClick={handleApplyBrandTheme}
                 className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all truncate max-w-[320px] font-medium"
-                title="Campanha de Matrículas Fat Lai"
+                title={`Campanha Institucional: ${brandProfile.brand_name}`}
               >
-                🥋 Matrículas: {brandProfile.brand_name} ({brandProfile.city})
+                🏢 {brandProfile.brand_name} ({brandProfile.city})
               </button>
             )}
             {sampleThemes.map((preset, pIdx) => (
