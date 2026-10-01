@@ -25,7 +25,14 @@ export function extractThemeSemantics(theme = '', brandProfile = null) {
   let visualSubject = `professional specialists and satisfied clients engaged in authentic, dynamic activity representing ${cleanTheme || 'modern business excellence'}, natural expressions, contemporary setting`;
   let negativeConstraints = 'no distorted anatomy, no cartoonish artifacts, no plastic skin, no blurry details';
 
-  if (isSenior) {
+  if (isMartialArts && isKids) {
+    niche = 'Kung Fu Infantil & Desenvolvimento Integral';
+    audience = 'Mães e pais focados em foco escolar, respeito mútuo, disciplina e autoconfiança dos filhos';
+    painPoint = 'tempo excessivo diante de telas, falta de concentração escolar, desmotivação e timidez';
+    solution = 'treino marcial tradicional infantil que desenvolve postura, foco inabalável e respeito mútuo no tatame';
+    visualSubject = 'authentic Brazilian children (aged 6 to 10 years old) in authentic traditional Chinese Kung Fu martial arts uniforms (silk kung fu attire) practicing disciplined martial stances and focus posture inside clean contemporary Kwoon training hall, respectful martial salute or dynamic stance guided by an adult Master, authentic focused determined expressions';
+    negativeConstraints = 'no toys, no building blocks, no playground, no casual clothes, no distorted anatomy, no cartoon, focus strictly on young children martial arts training in traditional uniform';
+  } else if (isSenior) {
     niche = 'Saúde & Bem-Estar para Terceira Idade';
     audience = 'Homens e mulheres da terceira idade (60 a 75 anos) e familiares que priorizam longevidade e autonomia';
     painPoint = 'perda de vitalidade, dores articulares, sedentarismo e receio de perder a independência diária';
@@ -51,8 +58,8 @@ export function extractThemeSemantics(theme = '', brandProfile = null) {
     audience = 'Famílias, apreciadores de gastronomia artesanal e consumidores que buscam sabor autêntico e produtos frescos';
     painPoint = 'produtos ultraprocessados industriais, pães sem sabor ou crocância e falta de opções verdadeiramente artesanais';
     solution = 'pães de fermentação natural fresca, casca crocante dourada, miolo alveolado macio e ingredientes selecionados com amor';
-    visualSubject = 'artisan baker, fresh sourdough bread, rustic bakery oven, flour dust in warm light, golden crust textures, artisanal craftsmanship';
-    negativeConstraints = 'no factory machinery, no industrial packaging, no artificial plastic look';
+    visualSubject = 'artisan baker in clean professional apron, fresh sourdough bread with golden crispy crust and open crumb, rustic bakery oven, hygienic commercial kitchen setting, clean apron, professional baker standards, appetizing food photography, warm natural morning light';
+    negativeConstraints = 'no unhygienic conditions, no dirty surfaces, no factory machinery, no industrial packaging, no artificial plastic look';
   } else if (isAesthetics) {
     niche = 'Estética Avançada, Beleza & Bem-Estar';
     audience = 'Mulheres e homens exigentes que valorizam rejuvenescimento natural, autocuidado e sofisticação';
@@ -79,8 +86,8 @@ export function extractThemeSemantics(theme = '', brandProfile = null) {
     audience = 'Praticantes de todas as idades que buscam autodefesa inteligente, disciplina mental e condicionamento físico';
     painPoint = 'estresse do dia a dia, vulnerabilidade física, sedentarismo e falta de autocontrole';
     solution = 'técnicas marciais autênticas, evolução gradual por mérito, saúde integral e ambiente respeitoso';
-    visualSubject = 'dedicated martial arts practitioners in clean contemporary training hall, focused kinetic motion, authentic uniforms, intense discipline';
-    negativeConstraints = 'no chaotic bar brawls, no blood or gore, no fake hollywood caricatures';
+    visualSubject = 'dedicated martial arts practitioners in clean contemporary training hall (Kwoon), focused kinetic motion, authentic traditional Kung Fu uniforms, intense discipline and focus';
+    negativeConstraints = 'no chaotic bar brawls, no blood or gore, no casual clothes, no fake hollywood caricatures';
   }
 
   return {

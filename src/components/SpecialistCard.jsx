@@ -38,8 +38,28 @@ export default function SpecialistCard({
   isRegenerating,
 }) {
   const [copied, setCopied] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
 
   const IconComponent = iconMap[card.iconName] || Layers;
+
+  const handleCopyPrompt = async (promptText) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(promptText);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = promptText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 2400);
+    } catch (err) {
+      console.error('Falha ao copiar prompt:', err);
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -279,13 +299,34 @@ export default function SpecialistCard({
             )}
 
             {section.type === 'code' && (
-              <div className="relative group/code">
-                <div className="bg-slate-950 p-3.5 rounded-xl border border-amber-900/30 font-mono text-xs text-amber-200/90 leading-relaxed overflow-x-auto shadow-inner">
-                  {section.content}
+              <div className="relative group/code flex flex-col gap-2.5">
+                <div className="relative">
+                  <div className="bg-slate-950 p-3.5 pr-24 rounded-xl border border-amber-900/30 font-mono text-xs text-amber-200/90 leading-relaxed overflow-x-auto shadow-inner">
+                    {section.content}
+                  </div>
+                  <span className="absolute top-2 right-2 text-[10px] bg-slate-800/90 text-amber-300/80 px-2 py-0.5 rounded border border-slate-700/60 font-mono">
+                    Prompt IA
+                  </span>
                 </div>
-                <span className="absolute top-2 right-2 text-[10px] bg-slate-800/90 text-amber-300/80 px-2 py-0.5 rounded border border-slate-700/60 font-mono">
-                  Prompt IA
-                </span>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyPrompt(section.content)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all duration-200 active:scale-95 shadow-sm"
+                  >
+                    {copiedPrompt ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
+                        <span className="text-emerald-400">✓ Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-amber-400" />
+                        <span>📋 Copiar Prompt de Imagem</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
 

@@ -413,11 +413,13 @@ Inspiração Midjourney: ${selectedStyle.midjourneyGuidance}
 
 INSTRUÇÕES RIGOROSAS:
 1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}".
+   - Se o tema envolver Kung Fu / artes marciais e crianças -> a imagem DEVE ser estritamente de crianças em uniforme tradicional (silk Kung Fu uniform) treinando no Kwoon (postura de foco, saudação ou movimento com mestre), NUNCA crianças brincando de blocos ou brinquedos.
+   - Se o tema envolver padaria / confeitaria / alimentação -> inclua obrigatoriamente: "hygienic commercial kitchen setting, clean apron, professional baker standards, appetizing food photography".
    - Se o tema for padaria -> mostre pães artesanais, padeiro, forno rústico, farinha no ar.
    - Se o tema for idosos / terceira idade -> mostre pessoas idosas ativas e saudáveis (60-75 anos).
    - Se o tema for médico / advogado -> mostre médicos ou advogados em consultório/escritório executivo moderno.
    - Se o tema for crianças -> mostre crianças de 6 a 10 anos.
-   - NUNCA force termos marciais ou crianças a menos que o tema cite explicitamente!
+   - NUNCA force termos marciais a menos que o tema ou perfil ativo cite explicitamente!
 2. No "prompt_midjourney" (em inglês cinematográfico):
    - Comece descrevendo o sujeito visual: ${semantics.visualSubject}
    - Incorpore: ${selectedStyle.midjourneyGuidance}
@@ -456,9 +458,21 @@ Retorne um JSON com:
   let rawPrompt = data.prompt_midjourney ||
     `Cinematic commercial photography of ${semantics.visualSubject}, ${selectedStyle.midjourneyGuidance}, ${selectedStyle.camera}, ${selectedStyle.lighting}, ${semantics.negativeConstraints}, photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
 
-  // Se por qualquer razão a IA externa omitiu o sujeito semântico, nós o garantimos no prompt
-  if (semantics.isBakery && !rawPrompt.toLowerCase().includes('bread') && !rawPrompt.toLowerCase().includes('baker')) {
-    rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+  // Se por qualquer razão a IA externa omitiu entidades vitais, nós as garantimos no prompt
+  if (semantics.isMartialArts && semantics.isKids) {
+    if (!rawPrompt.toLowerCase().includes('kung fu') && !rawPrompt.toLowerCase().includes('martial')) {
+      rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+    }
+    if (!rawPrompt.toLowerCase().includes('no toys') && !rawPrompt.toLowerCase().includes('no building blocks')) {
+      rawPrompt = `${rawPrompt}, no toys, no building blocks, no playground, no casual clothes`;
+    }
+  } else if (semantics.isBakery) {
+    if (!rawPrompt.toLowerCase().includes('bread') && !rawPrompt.toLowerCase().includes('baker')) {
+      rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+    }
+    if (!rawPrompt.toLowerCase().includes('hygienic commercial kitchen')) {
+      rawPrompt = `${rawPrompt}, hygienic commercial kitchen setting, clean apron, professional baker standards, appetizing food photography`;
+    }
   } else if (semantics.isSenior && !rawPrompt.toLowerCase().includes('senior') && !rawPrompt.toLowerCase().includes('elderly')) {
     rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
   } else if (semantics.isDoctorLawyer && !rawPrompt.toLowerCase().includes('doctor') && !rawPrompt.toLowerCase().includes('lawyer')) {

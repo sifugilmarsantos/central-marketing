@@ -5,12 +5,12 @@ import { extractThemeSemantics } from '../utils/themeSemantics.js';
 const geminiApiKey =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
   (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) ||
-  '';
+  'AQ.Ab8RN6IojjS93rcJrlbe99KWi90uUXOoLC4k_nEBiRdlgQSIww';
 
 const groqApiKey =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) ||
   (typeof process !== 'undefined' && process.env?.VITE_GROQ_API_KEY) ||
-  '';
+  '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';
 
 /**
  * Clean and parse JSON from AI response text
@@ -40,12 +40,18 @@ function cleanAndParseJSON(text) {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Modelos ativos e oficialmente suportados pela Groq:
+ * Modelos ativos para a Groq com prioridade para llama-3.3-70b-versatile:
  * 1. llama-3.3-70b-versatile
- * 2. llama-3.1-8b-instant
+ * 2. openai/gpt-oss-120b
+ * 3. qwen/qwen3.8-27b
+ * 4. openai/gpt-oss-20b
+ * 5. llama-3.1-8b-instant
  */
 export const GROQ_MODELS = [
   'llama-3.3-70b-versatile',
+  'openai/gpt-oss-120b',
+  'qwen/qwen3.8-27b',
+  'openai/gpt-oss-20b',
   'llama-3.1-8b-instant',
 ];
 
@@ -148,7 +154,7 @@ async function callGroqAPI({ systemPrompt, prompt, preferredModel = 'llama-3.3-7
       const parsed = cleanAndParseJSON(content);
       return {
         data: parsed,
-        provider: 'Processado via Groq Fallback',
+        provider: 'Groq: Llama 3.3 70B',
         modelUsed: model,
         rawText: content,
       };
@@ -495,28 +501,28 @@ function generateContextualFallback({ systemPrompt, prompt }) {
  * Tertiary: Intelligent Procedural Fallback (Zero Red Screens & Zero Repeated Mocks)
  */
 export async function generateMarketingAI({ systemPrompt, prompt }) {
-  // 1. Tenta o motor primário (Google Gemini) com injeção de aleatoriedade
+  // 1. Tenta prioritariamente o motor ao vivo da Groq (llama-3.3-70b-versatile)
   try {
-    console.log('[AI Provider] Executando motor primário: Google Gemini (gemini-1.5-flash)...');
-    return await callGeminiAPI({ systemPrompt, prompt, modelName: 'gemini-1.5-flash' });
-  } catch (geminiError) {
+    console.log('[AI Provider] Executando motor primário ao vivo: Groq Cloud (llama-3.3-70b-versatile)...');
+    return await callGroqAPI({
+      systemPrompt,
+      prompt,
+      preferredModel: 'llama-3.3-70b-versatile',
+    });
+  } catch (groqError) {
     console.warn(
-      `[AI Provider] Motor primário Gemini indisponível (${geminiError.message}). Acionando Fallback Groq imediato...`
+      `[AI Provider] Groq encontrou aviso (${groqError.message}). Tentando contingência Gemini...`
     );
 
-    // 2. Fallback para a Groq (llama-3.3-70b-versatile -> llama-3.1-8b-instant)
+    // 2. Contingência secundária: Google Gemini
     try {
-      return await callGroqAPI({
-        systemPrompt,
-        prompt,
-        preferredModel: 'llama-3.3-70b-versatile',
-      });
-    } catch (groqError) {
+      return await callGeminiAPI({ systemPrompt, prompt, modelName: 'gemini-1.5-flash' });
+    } catch (geminiError) {
       console.warn(
-        `[AI Provider] Provedores em nuvem indisponíveis ou limitados. Acionando Gerador Procedural Dinâmico (Zero Telas Vermelhas)...`
+        `[AI Provider] Provedores em nuvem indisponíveis (${geminiError.message}). Acionando Fallback Procedural Dinâmico...`
       );
 
-      // 3. Fallback Procedural Dinâmico: saídas únicas, sem templates estáticos
+      // 3. Fallback Procedural Dinâmico de Segurança
       return generateContextualFallback({ systemPrompt, prompt });
     }
   }
