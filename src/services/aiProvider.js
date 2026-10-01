@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { extractThemeSemantics } from '../utils/themeSemantics.js';
 
 // Leitura segura das variáveis de ambiente com fallbacks (|| '') para não quebrar a aplicação
 const geminiApiKey =
@@ -260,25 +261,26 @@ async function callGeminiAPI({ systemPrompt, prompt, modelName = 'gemini-1.5-fla
 }
 
 /**
- * Gerador Procedural Dinâmico de Segurança (Zero Telas Vermelhas e Zero Respostas Repetidas)
+ * Gerador Procedural Dinâmico de Segurança (Zero Telas Vermelhas, Zero Respostas Repetidas e 100% Agnóstico Multi-Nicho)
  * Constrói combinatórias procedurais dinâmicas únicas a cada execução, sem templates estáticos congelados.
  */
 function generateContextualFallback({ systemPrompt, prompt }) {
-  const themeMatch = prompt.match(/TEMA(?: DA CAMPANHA)?:?\s*"([^"]+)"/i);
-  const theme = themeMatch ? themeMatch[1] : 'Aulas de Kung Fu e Desenvolvimento Integral';
+  const themeMatch = prompt.match(/TEMA(?: DA CAMPANHA)?:?\s*"([^"]+)"/i) || prompt.match(/TEMA:\s*([^\n\r]+)/i);
+  const theme = themeMatch ? themeMatch[1].trim() : 'Lançamento e captação de clientes qualificados';
+  const semantics = extractThemeSemantics(theme);
 
   // 1. Estrategista de Conteúdo
   if (systemPrompt.includes('Estrategista') || (prompt.includes('objetivo') && prompt.includes('gancho'))) {
     const hooksPool = [
-      `“Você sabia que o foco desenvolvido no Kwoon transforma o rendimento escolar e a disciplina diária muito além das técnicas marciais?”`,
-      `“Disciplina não se ensina gritando: aprende-se na prática dos Katis sob a orientação paciente e firme de um Sifu.”`,
-      `“Em um mundo saturado de telas e dispersão, o treino marcial tradicional devolve aos praticantes a presença, o autocontrole e a postura.”`,
-      `“Mais do que condicionamento físico: o Kung Fu tradicional em Londrina é uma escola de autoconfiança e resiliência para a vida.”`,
+      `“Você sabia que superar ${semantics.painPoint} é o primeiro passo para conquistar ${semantics.solution}?”`,
+      `“Enquanto muitos ainda sofrem com ${semantics.painPoint}, quem prioriza excelência acelera com ${semantics.solution}.”`,
+      `“Em um mercado repleto de soluções genéricas, o que ${semantics.audience} realmente valoriza é ${semantics.solution}.”`,
+      `“Mais do que um serviço convencional: uma transformação definitiva contra ${semantics.painPoint} com padrão superior.”`,
     ];
     const formatsPool = [
-      'Carrossel Narrativo de 5 lâminas (4:5) + Vídeo Curto / Reels vertical com demonstração dinâmica de Katis no Kwoon.',
-      'Sequência de Stories Interativos com Enquete + Post em Grade vertical de alto contraste (1080x1350).',
-      'Carrossel Editorial com foco em Transformação e Prova Social + Vídeo de apresentação institucional com o Sifu.',
+      'Carrossel Educativo e Persuasivo de 5 lâminas (4:5) + Reel vertical de 45s com storytelling de dor e virada de chave.',
+      'Sequência de Stories Interativos com Enquete e Diagnóstico + Post em Grade vertical de alto contraste (1080x1350).',
+      'Carrossel Editorial com foco em Transformação e Prova Social + Apresentação institucional de autoridade.',
     ];
 
     const chosenHook = hooksPool[Math.floor(Math.random() * hooksPool.length)];
@@ -286,12 +288,12 @@ function generateContextualFallback({ systemPrompt, prompt }) {
 
     return {
       data: {
-        objetivo: `Consolidar o posicionamento do Kwoon como centro de referência marcial e acelerar a captação de novos alunos para a campanha "${theme}".`,
+        objetivo: `Consolidar o posicionamento de referência em ${semantics.niche} e acelerar a captação de clientes qualificados para a campanha "${semantics.theme}".`,
         formato: chosenFormat,
         gancho: chosenHook,
       },
       provider: 'Motor Especialista Adaptativo (Procedural Dinâmico)',
-      modelUsed: 'Orquestrador Dinâmico',
+      modelUsed: 'Orquestrador Dinâmico Multi-Nicho',
       rawText: 'Conteúdo procedural de Estratégia gerado dinamicamente.',
     };
   }
@@ -300,25 +302,25 @@ function generateContextualFallback({ systemPrompt, prompt }) {
   if (systemPrompt.includes('Copywriter') || prompt.includes('textos_arte')) {
     const copyNarratives = [
       {
-        capa: `O que acontece quando uma criança entra no Kwoon pela primeira vez?`,
-        l2: `A agitação se transforma em escuta atenta, e o medo dá lugar à postura firme.`,
-        l3: `Cada Kati praticado ensina paciência, concentração e respeito aos mestres e colegas.`,
-        l4: `Sob a mentoria do nosso Sifu, desenvolve-se um caráter inabalável para os desafios da vida.`,
-        cta: `👉 Garanta uma aula experimental gratuita para seu filho no nosso Kwoon em Londrina!`
+        capa: `Cansado de lidar com ${semantics.painPoint}?`,
+        l2: `A grande maioria tenta resolver isso no improviso e colhe desgaste contínuo.`,
+        l3: `Com nossa metodologia especializada, você conquista ${semantics.solution}.`,
+        l4: `Atendimento sob medida, excelência técnica e foco total na sua satisfação real.`,
+        cta: `👉 Toque no botão abaixo e solicite um atendimento exclusivo com nossa equipe!`
       },
       {
-        capa: `Cansado da falta de foco e do excesso de telas na rotina diária?`,
-        l2: `A metodologia milenar do Kung Fu tradicional canaliza energia com propósito.`,
-        l3: `Treino estruturado em tatame seguro com exercícios de agilidade motora e equilíbrio.`,
-        l4: `Conquista de faixas como celebração do esforço pessoal e superação contínua.`,
-        cta: `👉 Envie uma mensagem e venha conhecer nosso espaço de treino marcial em Londrina!`
+        capa: `O que realmente diferencia quem alcança ${semantics.solution}?`,
+        l2: `Não é coincidência: é processo estruturado e compromisso com o resultado.`,
+        l3: `Desenvolvemos uma experiência pensada especificamente para ${semantics.audience}.`,
+        l4: `Diga adeus a ${semantics.painPoint} e viva uma nova realidade com segurança.`,
+        cta: `👉 Envie uma mensagem direta e dê o próximo passo hoje mesmo!`
       },
       {
-        capa: `Autodefesa, saúde mental e equilíbrio: o poder do treino marcial autêntico.`,
-        l2: `No Kwoon, corpo e mente são lapidados simultaneamente sem ambiente de agressividade.`,
-        l3: `Aprenda sequências tradicionais de Katis com metodologia clara e acolhedora.`,
-        l4: `O Sifu conduz cada treino respeitando o ritmo e potencial de cada praticante.`,
-        cta: `👉 Toque no link da bio e agende sua primeira aula prática sem custo!`
+        capa: `Excelência, confiança e resultados comprovados em ${semantics.niche}.`,
+        l2: `Entendemos a fundo o seu maior desafio: ${semantics.painPoint}.`,
+        l3: `Nossa proposta entrega ${semantics.solution} com transparência e padrão superior.`,
+        l4: `Faça parte de quem prioriza qualidade inegociável e evolução consistente.`,
+        cta: `👉 Agende agora uma conversa sem compromisso através do botão abaixo!`
       }
     ];
 
@@ -333,11 +335,11 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           `Lâmina 4: ${chosenCopy.l4}`,
           `Lâmina 5 (Final): ${chosenCopy.cta}`,
         ],
-        legenda: `Mais do que socos e chutes, a prática marcial em nosso Kwoon proporciona uma jornada sólida de equilíbrio emocional, disciplina mental e vitalidade física.\n\nSob a supervisão do nosso Sifu, cada aluno desenvolve foco e perseverança por meio do domínio gradual dos Katis, construindo hábitos saudáveis que transformam a convivência na escola, no trabalho e no ambiente familiar em Londrina.\n\n🥋 Venha viver essa experiência na prática!`,
+        legenda: `Para quem busca excelência em ${semantics.niche}, aceitar soluções improvisadas não é uma opção.\n\nSabemos como ${semantics.painPoint} consome seu tempo e sua energia. É por isso que desenvolvemos uma abordagem completa que entrega ${semantics.solution}.\n\nSeja para você, sua família ou seu negócio, nós estamos prontos para oferecer um padrão de atendimento que supera expectativas.\n\n✨ Dê o próximo passo com quem é referência no segmento!`,
         cta: chosenCopy.cta,
       },
       provider: 'Motor Especialista Adaptativo (Procedural Dinâmico)',
-      modelUsed: 'Orquestrador Dinâmico',
+      modelUsed: 'Orquestrador Dinâmico Multi-Nicho',
       rawText: 'Copywriting gerado proceduralmente com alta variabilidade.',
     };
   }
@@ -345,55 +347,49 @@ function generateContextualFallback({ systemPrompt, prompt }) {
   // 3. Revisor Textual
   if (systemPrompt.includes('Revisor') || prompt.includes('parecer_tecnico')) {
     const parecerVariations = [
-      'Auditoria ortográfica e estilística concluída com êxito. Texto 100% alinhado ao padrão culto brasileiro (Novo Acordo Ortográfico), com métrica rítmica mobile e conformidade absoluta com a terminologia tradicional do Kung Fu (Kwoon, Katis e Sifu). Nenhuma inconsistência detectada.',
-      'Revisão técnica mobile finalizada. Eliminadas ambiguidades e repetições fônicas. Vocabulário marcial validado com rigor: terminologia correta aplicada em 100% das referências.',
-      'Validação linguística aprovada. Tom de voz equilibrado entre disciplina e acolhimento familiar, estruturado para leitura de alto impacto em feeds verticais.',
+      `Auditoria ortográfica e estilística concluída com êxito. Texto 100% alinhado ao padrão culto brasileiro (Novo Acordo Ortográfico), com métrica rítmica mobile e tom persuasivo adequado ao nicho de ${semantics.niche}. Nenhuma inconsistência detectada.`,
+      `Revisão técnica mobile finalizada. Eliminadas ambiguidades, termos genéricos e repetições fônicas. Clareza e poder de conversão otimizados para o público de ${semantics.audience}.`,
+      `Validação linguística aprovada com louvor. Equilíbrio perfeito entre autoridade técnica e apelo emocional, estruturado para leitura de alto impacto em feeds verticais.`,
     ];
 
     return {
       data: {
         parecer_tecnico: parecerVariations[Math.floor(Math.random() * parecerVariations.length)],
-        texto_revisado: `Mais do que movimentos corporais, o Kung Fu tradicional em nosso Kwoon proporciona equilíbrio emocional, disciplina mental e vitalidade. Sob a supervisão atenta do Sifu, cada aluno desenvolve foco e autoconfiança por meio do aperfeiçoamento constante dos Katis. Agende sua aula experimental e transforme sua rotina em Londrina!`,
+        texto_revisado: `Mais do que promessas convencionais, nossa proposta em ${semantics.niche} entrega uma transformação real contra ${semantics.painPoint}. Com metodologia estruturada e foco absoluto em ${semantics.solution}, garantimos uma experiência de alto padrão para você. Entre em contato e conheça nosso trabalho!`,
         melhorias: [
-          'Conformidade cultural estrita com a tradição do Kung Fu chinês (Kwoon, Katis, Sifu).',
-          'Cadência rítmica aprimorada para leitura dinâmica em dispositivos móveis.',
-          'Eliminação de repetições fônicas e reforço da chamada para ação persuasiva.',
+          `Ajuste fino de cadência e pontuação rítmica para leitura veloz em dispositivos móveis.`,
+          `Alinhamento semântico com as dores e expectativas centrais de ${semantics.audience}.`,
+          `Fortalecimento da chamada para ação com verbos de comando claros e diretos.`,
         ],
       },
       provider: 'Motor Especialista Adaptativo (Procedural Dinâmico)',
-      modelUsed: 'Orquestrador Dinâmico',
+      modelUsed: 'Orquestrador Dinâmico Multi-Nicho',
       rawText: 'Revisão textual procedural gerada.',
     };
   }
 
-  // 4. Diretor de Arte (Variabilidade Radical entre 6 Estilos)
+  // 4. Diretor de Arte (Variabilidade Radical entre 6 Estilos Agnósticos)
   if (systemPrompt.includes('Diretor de Arte') || prompt.includes('prompt_midjourney')) {
-    const isKidsContext = /(crian[çc]a|crian[çc]as|infantil|escolar|filhos?|kids?|pequenos?|mirim)/i.test(`${systemPrompt} ${prompt}`);
-
     const artStyles = [
       {
         palette: [
           { name: 'Preto Grafite (Base)', hex: '#0B0F19' },
-          { name: 'Dourado Kung Fu (Destaque)', hex: '#F59E0B' },
+          { name: 'Âmbar Elétrico (Destaque)', hex: '#F59E0B' },
           { name: 'Ciano Foco (Acento)', hex: '#06B6D4' },
           { name: 'Branco Puro (Texto)', hex: '#FFFFFF' }
         ],
-        layout: 'Fotografia editorial esportiva em movimento rápido. Plano médio dinâmico com ângulo plongée suave, congelamento de movimento em alta velocidade de obturador, tipografia Sans-Serif ultra-bold e espaço negativo para título.',
-        prompt: isKidsContext
-          ? 'Cinematic sports editorial photography of authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing high-speed jump kick in contemporary clean Kwoon, 1/2000s shutter speed motion freeze, Sony A7IV with 85mm f/1.4 GM lens, natural volumetric window daylight, crisp athletic uniforms, photorealistic 8k, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
-          : 'Cinematic sports editorial photography of dynamic Kung Fu martial artists executing high-speed jumping kick in contemporary clean training hall Kwoon, 1/2000s shutter speed motion freeze, Sony A7IV with 85mm f/1.4 GM lens, natural volumetric morning window daylight, crisp athletic uniforms, photorealistic 8k, ultra-sharp details --ar 4:5 --v 6.1 --style raw'
+        layout: 'Fotografia editorial de alta performance em ação dinâmica. Plano médio dinâmico com iluminação volumétrica, congelamento de movimento em alta velocidade de obturador, tipografia Sans-Serif ultra-bold e respiro visual para título.',
+        prompt: `Cinematic commercial editorial photography featuring ${semantics.visualSubject}, dynamic authentic motion, 1/2000s shutter speed motion freeze, Sony A7IV with 85mm f/1.4 GM lens, natural volumetric window daylight, photorealistic 8k, ultra-sharp details, ${semantics.negativeConstraints} --ar 4:5 --v 6.1 --style raw`
       },
       {
         palette: [
           { name: 'Navy Profundo (Base)', hex: '#0A1128' },
           { name: 'Âmbar Solar (Destaque)', hex: '#D97706' },
-          { name: 'Vermelho Marcial (Acento)', hex: '#DC2626' },
+          { name: 'Vermelho Nobre (Acento)', hex: '#DC2626' },
           { name: 'Branco Gelo (Contraste)', hex: '#F8FAFC' }
         ],
-        layout: 'Retrato cinematográfico close-up emocional. Foco absoluto no olhar marcial intenso, determinação e suor sutil na fronte. Iluminação chiaroscuro dramática com corte dourado e profundidade de campo rasa.',
-        prompt: isKidsContext
-          ? 'Intense cinematic close-up portrait of authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing, subtle sweat on brow, fierce focused innocent eyes, dramatic golden rim light, Canon EOS R5 with 85mm f/1.2 lens at f/1.4, creamy dark bokeh, natural skin texture, 8k resolution, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
-          : 'Intense cinematic close-up portrait of dedicated martial artist in modern authentic Kwoon, subtle sweat on brow, fierce focused eyes, dramatic golden rim light, Canon EOS R5 with 85mm f/1.2 lens at f/1.4, creamy dark bokeh, high-contrast chiaroscuro, natural skin texture, 8k resolution --ar 4:5 --v 6.1 --style raw'
+        layout: 'Retrato cinematográfico close-up emocional. Foco absoluto no olhar e na autenticidade da expressão humana, iluminação chiaroscuro dramática com corte dourado e profundidade de campo rasa.',
+        prompt: `Intense cinematic close-up portrait of ${semantics.visualSubject}, authentic emotional expression, dramatic golden rim light, Canon EOS R5 with 85mm f/1.2 lens at f/1.4, creamy dark bokeh, natural skin texture, 8k resolution, ${semantics.negativeConstraints} --ar 4:5 --v 6.1 --style raw`
       },
       {
         palette: [
@@ -402,22 +398,18 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Ciano Técnico (Acento)', hex: '#0891B2' },
           { name: 'Branco Marfim (Texto)', hex: '#FDFBF7' }
         ],
-        layout: 'Cena documental autêntica de orientação e correção postural pelo Sifu. Enquadramento sobre o ombro (over-the-shoulder), iluminação suave e acolhedora, atmosfera solene de aprendizado.',
-        prompt: isKidsContext
-          ? 'Documentary photojournalism style in authentic Chinese Kung Fu Kwoon, an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student, over-the-shoulder medium shot, Leica SL2 with 50mm f/1.2 Summilux prime, warm diffused ambient light, genuine respect and mentorship, photorealistic 8k, no bodybuilders, no teenage athletes, young child student with adult master Sifu --ar 4:5 --v 6.1 --style raw'
-          : 'Documentary photojournalism style of respected Chinese Kung Fu Sifu master gently correcting a young student martial stance in clean authentic Kwoon, over-the-shoulder medium shot, Leica SL2 with 50mm f/1.2 Summilux prime, warm diffused ambient light, genuine respect and mentorship, photorealistic 8k --ar 4:5 --v 6.1 --style raw'
+        layout: 'Cena documental autêntica de conexão humana e atendimento de excelência. Enquadramento sobre o ombro (over-the-shoulder), iluminação suave e acolhedora, atmosfera de acolhimento e confiança mútua.',
+        prompt: `Documentary photojournalism style capturing ${semantics.visualSubject}, over-the-shoulder medium shot, Leica SL2 with 50mm f/1.2 Summilux prime, warm diffused ambient light, genuine empathy and professional trust, photorealistic 8k, ${semantics.negativeConstraints} --ar 4:5 --v 6.1 --style raw`
       },
       {
         palette: [
           { name: 'Preto Ônix (Base)', hex: '#111827' },
           { name: 'Laranja Elétrico (Destaque)', hex: '#EA580C' },
-          { name: 'Verde Jade (Acento)', hex: '#059669' },
+          { name: 'Verde Esmeralda (Acento)', hex: '#059669' },
           { name: 'Branco Puro (Texto)', hex: '#FFFFFF' }
         ],
-        layout: 'Treino de alta intensidade com equipamentos marciais. Prática potente com sacos de areia suspensos, manoplas de foco e bastão chinês Gun. Composição esportiva de alto rendimento.',
-        prompt: isKidsContext
-          ? 'High-intensity athletic martial arts training in modern Kwoon athletic center, authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing striking focus mitts and sandbags, Sony FX3 with 35mm f/1.4 GM lens, directional top softbox lighting, hyper-realistic sports photography 8k, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
-          : 'High-intensity athletic martial arts training in modern Kwoon athletic center, practitioner striking heavy sandbags with focus pads, dynamic motion, Sony FX3 with 35mm f/1.4 GM cinema lens, directional top softbox lighting with energetic rim accents, hyper-realistic sports photography 8k --ar 4:5 --v 6.1 --style raw'
+        layout: 'Trabalho de alta precisão com ferramentas do ofício e ambiente moderno de trabalho. Composição técnica de alto rendimento com contraste elevado e iluminação direcional.',
+        prompt: `High-performance dynamic shot featuring ${semantics.visualSubject}, modern tools and premium environment, Sony FX3 with 35mm f/1.4 GM cinema lens, directional softbox lighting with energetic rim accents, hyper-realistic photography 8k, ${semantics.negativeConstraints} --ar 4:5 --v 6.1 --style raw`
       },
       {
         palette: [
@@ -426,22 +418,18 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Azul Marinho (Acento)', hex: '#1E3A8A' },
           { name: 'Branco Titânio (Texto)', hex: '#FFFFFF' }
         ],
-        layout: 'Composição de pôster publicitário minimalista com amplo espaço negativo limpo no terço esquerdo para aplicação de tipografia comercial e logotipo. Equilíbrio assimétrico sofisticado.',
-        prompt: isKidsContext
-          ? 'Minimalist commercial advertising poster photography, silhouette and rim light of authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students in poised martial stance against clean negative space, Hasselblad H6D-100c medium format camera, sleek modern athletic Kwoon background, pristine commercial grade clarity, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
-          : 'Minimalist commercial advertising poster photography, silhouette and rim light of martial artist in poised stance against clean negative space, Hasselblad H6D-100c medium format camera, sleek modern athletic Kwoon background, pristine commercial grade clarity, deep rich contrast --ar 4:5 --v 6.1 --style raw'
+        layout: 'Composição de pôster publicitário minimalista com amplo espaço negativo limpo no terço superior/lateral para aplicação de tipografia comercial e logotipo. Equilíbrio assimétrico sofisticado.',
+        prompt: `Minimalist commercial advertising poster photography, silhouette and rim light of ${semantics.visualSubject} against clean negative space, Hasselblad H6D-100c medium format camera, pristine commercial clarity, deep rich contrast, ${semantics.negativeConstraints} --ar 4:5 --v 6.1 --style raw`
       },
       {
         palette: [
-          { name: 'Bordeaux Tradicional (Base)', hex: '#1C1917' },
-          { name: 'Dourado Imperial (Destaque)', hex: '#F59E0B' },
-          { name: 'Ciano Céu (Acento)', hex: '#38BDF8' },
+          { name: 'Grafite Nobre (Base)', hex: '#1C1917' },
+          { name: 'Dourado Champanhe (Destaque)', hex: '#F59E0B' },
+          { name: 'Azul Cobalto (Acento)', hex: '#38BDF8' },
           { name: 'Branco Seda (Texto)', hex: '#FEF08A' }
         ],
-        layout: 'Cena solene de tradição marcial e respeito. Enquadramento simétrico frontal com saudação tradicional Bingbu Li (Baishi) ou cerimônia de entrega de faixa, iluminação dourada serena.',
-        prompt: isKidsContext
-          ? 'Solemn traditional Chinese martial ceremony in modern authentic Kwoon, authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing respectful Bingbu Li martial salute with closed right fist against open left palm, Nikon Z9 with 85mm f/1.4 lens, soft dawn light streaming through windows, golden atmosphere, serene disciplined mood, 8k resolution, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
-          : 'Solemn traditional Chinese martial ceremony in modern authentic Kwoon, respectful Bingbu Li martial salute with closed right fist against open left palm, Nikon Z9 with 85mm f/1.4 lens, soft dawn light streaming through windows, golden atmosphere, serene disciplined mood, 8k resolution --ar 4:5 --v 6.1 --style raw'
+        layout: 'Cena solene de autoridade e prestígio institucional. Enquadramento simétrico equilibrado, iluminação dourada serena da manhã, atmosfera de solidez e confiabilidade.',
+        prompt: `Solemn prestigious commercial composition of ${semantics.visualSubject}, architectural symmetry, Nikon Z9 with 85mm f/1.4 lens, soft dawn light streaming through windows, golden atmosphere, serene authoritative mood, 8k resolution, ${semantics.negativeConstraints} --ar 4:5 --v 6.1 --style raw`
       }
     ];
 
@@ -454,7 +442,7 @@ function generateContextualFallback({ systemPrompt, prompt }) {
         prompt_midjourney: chosenArt.prompt,
       },
       provider: 'Motor Especialista Adaptativo (Procedural Dinâmico)',
-      modelUsed: 'Orquestrador Dinâmico',
+      modelUsed: 'Orquestrador Dinâmico Multi-Nicho',
       rawText: 'Direção de Arte procedural gerada com estilo exclusivo.',
     };
   }
@@ -467,16 +455,16 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { label: 'Feed Vertical (Instagram/LinkedIn)', detail: '1080 x 1350 px (proporção 4:5) aprovado com alta definição', status: 'pass' },
           { label: 'Stories & Reels Vertical', detail: '1080 x 1920 px (9:16) safe-zone de 250px preservada', status: 'pass' },
           { label: 'Contraste & Acessibilidade WCAG', detail: 'Taxa de contraste > 7.8:1 aprovada no padrão AAA', status: 'pass' },
-          { label: 'Auditoria Cultural Kung Fu', detail: '100% de conformidade com Kwoon, Katis e Sifu validada', status: 'pass' },
+          { label: 'Alinhamento de Marca & Tom de Voz', detail: `100% de adequação semântica ao segmento de ${semantics.niche}`, status: 'pass' },
         ],
         horarios_sugeridos: [
-          { day: 'Terça-feira', time: '11:45', reason: 'Pico de engajamento no intervalo de almoço' },
-          { day: 'Quinta-feira', time: '18:30', reason: 'Consumo mobile no retorno do expediente e escola' },
-          { day: 'Domingo', time: '20:15', reason: 'Planejamento semanal de atividades esportivas e familiares' },
+          { day: 'Terça-feira', time: '11:45', reason: 'Pico de engajamento no intervalo de almoço e pausas comerciais' },
+          { day: 'Quinta-feira', time: '18:30', reason: 'Consumo mobile no retorno do expediente e final do dia' },
+          { day: 'Domingo', time: '20:15', reason: 'Planejamento semanal de decisões pessoais e familiares' },
         ],
       },
       provider: 'Motor Especialista Adaptativo (Procedural Dinâmico)',
-      modelUsed: 'Orquestrador Dinâmico',
+      modelUsed: 'Orquestrador Dinâmico Multi-Nicho',
       rawText: 'Validação de QA procedural gerada.',
     };
   }
@@ -484,18 +472,18 @@ function generateContextualFallback({ systemPrompt, prompt }) {
   // 6. Gestor de Tráfego Pago
   return {
     data: {
-      publico_alvo: 'Homens e Mulheres (24 a 52 anos), pais e responsáveis interessados em educação infantil, disciplina, foco e desenvolvimento motor, além de jovens e adultos com interesse em artes marciais tradicionais, condicionamento físico, saúde mental e autodefesa.',
-      raio_geografico: 'Londrina e cidades adjacentes num raio de até 15 km com geolocalização no Kwoon.',
-      objetivo_campanha: 'Geração de Cadastros Qualificados (Leads Meta Ads com formulário instantâneo) e Conversões de Mensagens diretas para o WhatsApp institucional.',
+      publico_alvo: semantics.audience,
+      raio_geografico: `Atuação regional em ${semantics.city} e microrregião (raio de 12 a 25 km) com foco em raio de entrega ou atendimento presencial/digital.`,
+      objetivo_campanha: 'Geração de Cadastros Qualificados (Leads Meta Ads com formulário instantâneo) e Conversões de Mensagens diretas no WhatsApp.',
       orcamento: {
-        testPhase: 'R$ 45,00 / dia',
-        scalePhase: 'R$ 160,00 / dia',
-        targetCPL: 'R$ 5,20 - R$ 8,80',
-        roasExpected: '3.8x a 5.2x',
+        testPhase: 'R$ 50,00 / dia',
+        scalePhase: 'R$ 180,00 / dia',
+        targetCPL: 'R$ 5,80 - R$ 9,50',
+        roasExpected: '3.6x a 5.0x',
       },
     },
     provider: 'Motor Especialista Adaptativo (Procedural Dinâmico)',
-    modelUsed: 'Orquestrador Dinâmico',
+    modelUsed: 'Orquestrador Dinâmico Multi-Nicho',
     rawText: 'Configuração de tráfego procedural gerada.',
   };
 }

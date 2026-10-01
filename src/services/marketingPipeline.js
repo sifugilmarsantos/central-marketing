@@ -1,51 +1,21 @@
 import { generateMarketingAI } from './aiProvider.js';
 import { supabase } from '../lib/supabase.js';
+import { extractThemeSemantics } from '../utils/themeSemantics.js';
 
 /**
- * Diretriz Rígida de Vocabulário e Estilo Cultural (Kung Fu Tradicional Chinês)
+ * Helper para construir o contexto institucional da marca
  */
-export const CULTURAL_VOCABULARY_GUIDELINE = `
-DIRETRIZ RÍGIDA DE VOCABULÁRIO E ESTILO CULTURAL (KUNG FU TRADICIONAL CHINÊS):
-1. É ESTRITAMENTE PROIBIDO o uso de termos japoneses (como "Dojo", "Kata", "Katas", "Sensei", "Kimono", "Tatame").
-2. Utilize EXCLUSIVAMENTE a terminologia tradicional do Kung Fu chinês:
-   - "Kwoon" para o espaço/sala/academia de treino (NUNCA use "Dojo").
-   - "Katis" (ou "Kati") para as formas/sequências de movimentos e técnicas (NUNCA use "Kata" ou "Katas").
-   - "Sifu" para o mestre/professor/orientador (NUNCA use "Sensei").
-3. Mantenha todas as respostas rigorosamente no padrão culto de Português do Brasil (PT-BR).
-`.trim();
-
-/**
- * Função utilitária de sanitização e garantia de conformidade terminológica
- */
-export function sanitizeKungFuTerms(text) {
-  if (!text) return text;
-  if (typeof text !== 'string') return text;
-  return text
-    .replace(/\bdojos\b/gi, (match) => (match[0] === 'D' ? 'Kwoons' : 'kwoons'))
-    .replace(/\bdojo\b/gi, (match) => (match[0] === 'D' ? 'Kwoon' : 'kwoon'))
-    .replace(/\bkatas\b/gi, (match) => (match[0] === 'K' ? 'Katis' : 'katis'))
-    .replace(/\bkata\b/gi, (match) => (match[0] === 'K' ? 'Kati' : 'kati'))
-    .replace(/\bsenseis\b/gi, (match) => (match[0] === 'S' ? 'Sifus' : 'sifus'))
-    .replace(/\bsensei\b/gi, (match) => (match[0] === 'S' ? 'Sifu' : 'sifu'))
-    .replace(/\btatames\b/gi, (match) => (match[0] === 'T' ? 'Kwoons' : 'kwoons'))
-    .replace(/\btatame\b/gi, (match) => (match[0] === 'T' ? 'Kwoon' : 'kwoon'));
-}
-
-/**
- * Helper to build brand context string for prompts
- */
-function getBrandContext(brandProfile) {
-  const brandDetails = !brandProfile
-    ? 'Marca Geral / Escola de Artes Marciais Tradicionais'
-    : `
-- Nome da Marca: ${brandProfile.brand_name || 'N/A'}
-- Cidade/Localização: ${brandProfile.city || 'N/A'}
-- Público-Alvo Institucional: ${brandProfile.target_audience || 'N/A'}
-- Tom de Voz Institucional: ${brandProfile.tone_of_voice || 'N/A'}
+export function getBrandContext(brandProfile) {
+  if (!brandProfile) {
+    return 'Marca e Negócio Contemporâneo de Alta Qualidade';
+  }
+  return `
+- Nome da Marca: ${brandProfile.brand_name || 'Empresa / Negócio'}
+- Cidade/Localização: ${brandProfile.city || 'Brasil'}
+- Público-Alvo Institucional: ${brandProfile.target_audience || 'Clientes potenciais e público qualificado'}
+- Tom de Voz Institucional: ${brandProfile.tone_of_voice || 'Profissional, acolhedor e persuasivo'}
 - Cores Institucionais: Primária ${brandProfile.primary_color || '#111827'}, Acento ${brandProfile.accent_color || '#EAB308'}
 `.trim();
-
-  return `${brandDetails}\n\n${CULTURAL_VOCABULARY_GUIDELINE}`;
 }
 
 /**
@@ -53,36 +23,39 @@ function getBrandContext(brandProfile) {
  */
 export async function executeStep1({ theme, brandProfile }) {
   const brandContext = getBrandContext(brandProfile);
+  const semantics = extractThemeSemantics(theme, brandProfile);
 
-  const systemPrompt = `Você é a Dra. Helena Vasconcelos, Estrategista de Conteúdo Sênior e Head de Posicionamento.
-Sua missão é estruturar a base estratégica de uma campanha de marketing de alto impacto.
-Você deve retornar estritamente um JSON com as chaves: "objetivo", "formato", "gancho".
-
-${CULTURAL_VOCABULARY_GUIDELINE}`;
+  const systemPrompt = `Você é a Dra. Helena Vasconcelos, Estrategista de Conteúdo Sênior e Head de Posicionamento de Marcas.
+Sua missão é estruturar a base estratégica de uma campanha de marketing de alto impacto adaptada perfeitamente ao nicho e público da campanha.
+Nicho detectado: ${semantics.niche}
+Público-Alvo: ${semantics.audience}
+Retorne estritamente um JSON com as chaves: "objetivo", "formato", "gancho".`;
 
   const prompt = `Defina a estratégia para a seguinte campanha:
 TEMA DA CAMPANHA: "${theme}"
-
-DIRETRIZES DA MARCA E CULTURAIS:
+NICHO IDENTIFICADO: ${semantics.niche}
+PÚBLICO-ALVO ESTIMADO: ${semantics.audience}
+DOR PRINCIPAL DO CLIENTE: ${semantics.painPoint}
+DIRETRIZES DA MARCA:
 ${brandContext}
 
-ATENÇÃO RIGOROSA:
-- Use exclusivamente terminologia chinesa de Kung Fu ("Kwoon" para sala/espaço de treino, "Katis" para formas/técnicas, "Sifu" para o mestre).
-- É TERMINANTEMENTE PROIBIDO usar "Dojo", "Kata" ou "Sensei".
-- Redija estritamente no padrão culto do Português do Brasil.
+INSTRUÇÕES RIGOROSAS:
+- Redija todo o conteúdo estritamente no padrão culto do Português do Brasil.
+- Adapte o vocabulário, exemplos e tom 100% ao segmento comercial do tema (se for padaria, fale de gastronomia e pães; se for médico/advogado, fale de serviços profissionais; se for terceira idade, fale de longevidade e bem-estar).
+- NUNCA injete termos de artes marciais ou nichos não relacionados, a menos que o tema cite explicitamente.
 
 Responda em formato JSON com:
 {
-  "objetivo": "Objetivo claro, específico e mensurável da campanha",
+  "objetivo": "Objetivo claro, específico e mensurável da campanha para este nicho",
   "formato": "Formato recomendado detalhado (ex: Carrossel de 5 lâminas 4:5 + Reels vertical de 45s)",
-  "gancho": "Gancho (hook) irresistível de abertura para reter a atenção nos primeiros 3 segundos"
+  "gancho": "Gancho (hook) irresistível de abertura para prender a atenção nos primeiros 3 segundos"
 }`;
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
-  const rawObjetivo = sanitizeKungFuTerms(data.objetivo) || 'Posicionar a marca e acelerar a captação de alunos.';
-  const rawFormato = sanitizeKungFuTerms(data.formato) || 'Carrossel Educativo (1080x1350) + Vídeo Curto.';
-  const rawGancho = sanitizeKungFuTerms(data.gancho) || theme;
+  const rawObjetivo = data.objetivo || `Consolidar a autoridade da marca no segmento de ${semantics.niche} e acelerar a captação de clientes qualificados.`;
+  const rawFormato = data.formato || 'Carrossel Educativo e Persuasivo (1080x1350) + Vídeo Curto / Reels vertical.';
+  const rawGancho = data.gancho || `“Descubra como transformar sua experiência com ${theme} através de atendimento especializado.”`;
 
   const card = {
     id: 'card-1',
@@ -114,6 +87,7 @@ Responda em formato JSON com:
     ],
     copyPayload: `[ESTRATÉGIA DE CONTEÚDO]
 Especialista: Dra. Helena Vasconcelos (${provider})
+Nicho: ${semantics.niche}
 Objetivo: ${rawObjetivo}
 Formato: ${rawFormato}
 Gancho (Hook): "${rawGancho}"`,
@@ -127,36 +101,38 @@ Gancho (Hook): "${rawGancho}"`,
  */
 export async function executeStep2({ theme, brandProfile, step1Data }) {
   const brandContext = getBrandContext(brandProfile);
+  const semantics = extractThemeSemantics(theme, brandProfile);
 
   const copyNarratives = [
-    'Enfoque em transformação pessoal, autoconfiança sólida e superação da timidez.',
-    'Enfoque em desenvolvimento infantil, foco nos estudos e disciplina sem rigidez punitiva.',
-    'Enfoque em descompressão, saúde mental, condicionamento físico e alívio do estresse.',
-    'Enfoque em autodefesa inteligente, autocontrole emocional e postura preventiva.',
-    'Enfoque na tradição autêntica do Kung Fu, linhagem marcial e mentoria direta do Sifu no Kwoon.',
+    'Enfoque em solução de dor imediata, economia de tempo e alívio de frustração do cliente.',
+    'Enfoque em autoridade técnica, qualidade premium e experiência comprovada no segmento.',
+    'Enfoque em transformação de vida, bem-estar, segurança e realização pessoal ou familiar.',
+    'Enfoque em custo-benefício inteligente, retorno sobre investimento e oferta de oportunidade exclusiva.',
+    'Enfoque em atendimento humanizado, acolhimento e relacionamento de longo prazo.',
   ];
   const chosenNarrative = copyNarratives[Math.floor(Math.random() * copyNarratives.length)];
 
-  const systemPrompt = `Você é Lucas Menezes, Copywriter Especialista em Resposta Direta e Narrativas Persuasivas.
-Você recebe a estratégia de conteúdo e cria textos altamente envolventes, autênticos e orientados à conversão.
-Retorne estritamente um JSON com as chaves: "textos_arte" (array de 4 a 5 strings), "legenda" (string completa), "cta" (string).
-
-${CULTURAL_VOCABULARY_GUIDELINE}`;
+  const systemPrompt = `Você é Lucas Menezes, Copywriter Especialista em Resposta Direta e Narrativas Persuasivas Multi-Nicho.
+Você recebe a estratégia de conteúdo e cria textos altamente envolventes, autênticos e orientados à conversão para qualquer segmento comercial.
+Nicho: ${semantics.niche}
+Retorne estritamente um JSON com as chaves: "textos_arte" (array de 4 a 5 strings), "legenda" (string completa), "cta" (string).`;
 
   const prompt = `Com base na estratégia definida:
 Objetivo: ${step1Data.objetivo}
 Formato: ${step1Data.formato}
 Gancho: ${step1Data.gancho}
 
-TEMA: "${theme}"
-DIRETRIZ NARRATIVA PRIORITÁRIA PARA ESTA VARIAÇÃO: ${chosenNarrative}
+TEMA DA CAMPANHA: "${theme}"
+NICHO: ${semantics.niche}
+PÚBLICO-ALVO: ${semantics.audience}
+DIRETRIZ NARRATIVA PRIORITÁRIA: ${chosenNarrative}
 MARCA E DIRETRIZES:
 ${brandContext}
 
-ATENÇÃO RIGOROSA DE VOCABULÁRIO:
-- Use exclusivamente a terminologia do Kung Fu tradicional chinês: "Kwoon" (espaço/sala de treino), "Katis" (formas/sequências) e "Sifu" (mestre/professor).
-- É ESTRITAMENTE PROIBIDO usar termos japoneses como "Dojo", "Kata", "Katas" ou "Sensei".
+INSTRUÇÕES RIGOROSAS:
 - Redija todo o conteúdo rigorosamente no padrão culto de Português do Brasil com quebras de parágrafo e alta retenção.
+- O copy DEVE ser 100% fiel ao tema "${theme}". Não injete termos de outros nichos (artes marciais, médicos, padarias) a menos que constem no briefing.
+- Crie uma chamada para ação (CTA) direta, clara e irresistível.
 
 Gere o copy completo em JSON com:
 {
@@ -165,19 +141,26 @@ Gere o copy completo em JSON com:
     "Lâmina 2: ...",
     "Lâmina 3: ...",
     "Lâmina 4: ...",
-    "Lâmina 5: ..."
+    "Lâmina 5 (Final): ..."
   ],
-  "legenda": "Legenda completa para redes sociais, persuasiva, com quebras de parágrafo e tom acolhedor/disciplinado",
-  "cta": "Chamada para ação direta (ex: Toque no link da bio e garanta sua aula experimental gratuita)"
+  "legenda": "Legenda completa para redes sociais, altamente persuasiva, empática e com quebras de parágrafo",
+  "cta": "Chamada para ação direta (ex: Toque no link da bio e fale com nossos especialistas)"
 }`;
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
-  const rawTextosArte = (Array.isArray(data.textos_arte) ? data.textos_arte : [data.textos_arte || theme]).map(
-    (t) => sanitizeKungFuTerms(t)
-  );
-  const rawLegenda = sanitizeKungFuTerms(data.legenda) || 'Legenda gerada pela IA.';
-  const rawCta = sanitizeKungFuTerms(data.cta) || '👉 Clique no botão abaixo e fale com nossa equipe.';
+  const rawTextosArte = Array.isArray(data.textos_arte) && data.textos_arte.length > 0
+    ? data.textos_arte
+    : [
+        `Lâmina 1 (Capa): Como alcançar excelência em ${semantics.niche}?`,
+        `Lâmina 2: O segredo está em aliar experiência, técnica e dedicação diária.`,
+        `Lâmina 3: Solução personalizada para atender às reais necessidades de ${semantics.audience}.`,
+        `Lâmina 4: Mais tranquilidade, segurança e resultados comprovados para você.`,
+        `Lâmina 5 (CTA): 👉 Toque no link e agende seu atendimento exclusivo!`
+      ];
+
+  const rawLegenda = data.legenda || `Quem busca o melhor em ${semantics.niche} sabe que qualidade e atendimento especializado fazem toda a diferença.\n\nCom "${theme}", entregamos uma experiência completa pensada para ${semantics.audience}.\n\n✨ Venha conhecer e comprove a diferença!`;
+  const rawCta = data.cta || '👉 Clique no botão abaixo e fale com nossa equipe especializada.';
 
   const card = {
     id: 'card-2',
@@ -209,6 +192,7 @@ Gere o copy completo em JSON com:
     ],
     copyPayload: `[COPYWRITING]
 Especialista: Lucas Menezes (${provider})
+Nicho: ${semantics.niche}
 Textos da Arte:
 ${rawTextosArte.map((t) => `- ${t}`).join('\n')}
 
@@ -230,36 +214,31 @@ CTA: ${rawCta}`,
  */
 export async function executeStep3({ theme, brandProfile, step2Data }) {
   const brandContext = getBrandContext(brandProfile);
+  const semantics = extractThemeSemantics(theme, brandProfile);
 
   const systemPrompt = `Você é a Profª. Beatriz Alencar, Consultora Linguística e Revisora Textual em Português do Brasil (PT-BR).
-Sua missão é garantir perfeição gramatical, cadência rítmica mobile, clareza e eliminar gerundismos e redundâncias.
-Você DEVE auditar e substituir compulsoriamente qualquer menção acidental a termos japoneses (como "Dojo", "Kata", "Katas", "Sensei", "Kimono", "Tatame") pela terminologia tradicional correta do Kung Fu chinês ("Kwoon", "Kati/Katis", "Sifu").
-Retorne estritamente um JSON com as chaves: "parecer_tecnico", "texto_revisado", "melhorias" (array de 3 strings).
+Sua missão é garantir perfeição gramatical, cadência rítmica mobile, clareza, concisão e adequação ao nicho da campanha (${semantics.niche}).
+Retorne estritamente um JSON com as chaves: "parecer_tecnico", "texto_revisado", "melhorias" (array de 3 strings).`;
 
-${CULTURAL_VOCABULARY_GUIDELINE}`;
-
-  const prompt = `Revise o seguinte copy de marketing:
+  const prompt = `Revise o seguinte copy de marketing para o tema "${theme}":
 Textos da Arte: ${JSON.stringify(step2Data.textos_arte)}
 Legenda: "${step2Data.legenda}"
 CTA: "${step2Data.cta}"
 
+NICHO: ${semantics.niche}
 DIRETRIZES DA MARCA:
 ${brandContext}
 
-REGRA COMPULSÓRIA DE AUDITORIA CULTURAL E TERMINOLÓGICA:
-1. Audite rigorosamente todo o texto e SUBSTITUA COMPULSORIAMENTE qualquer menção acidental a termos japoneses:
-   - Substitua "Dojo" por "Kwoon"
-   - Substitua "Kata" ou "Katas" por "Kati" ou "Katis"
-   - Substitua "Sensei" por "Sifu"
-   - Substitua "Tatame" por "Kwoon" ou "sala de treino"
-2. É ESTRITAMENTE PROIBIDO manter qualquer termo japonês no texto revisado.
-3. No "parecer_tecnico" e nas "melhorias", aponte formalmente a validação e adequação à terminologia tradicional do Kung Fu chinês.
-4. Mantenha todo o texto formatado rigorosamente no padrão de Português do Brasil.
+INSTRUÇÕES RIGOROSAS:
+1. Audite o texto segundo o Novo Acordo Ortográfico e a norma-padrão de Português do Brasil.
+2. Elimine ambiguidades, repetições desnecessárias e gerundismos.
+3. Garanta que o texto mantenha cadência rítmica ideal para leitura em smartphones.
+4. Mantenha a coerência terminológica estritamente com o nicho de ${semantics.niche}.
 
 Retorne um JSON com:
 {
-  "parecer_tecnico": "Parecer conciso da revisão conforme o Novo Acordo Ortográfico, padrão PT-BR e validação da terminologia de Kung Fu (Kwoon, Katis, Sifu)",
-  "texto_revisado": "Versão definitiva aprimorada, polida e fluida do texto/legenda para leitura em smartphones, sem nenhum termo japonês",
+  "parecer_tecnico": "Parecer conciso da revisão conforme o padrão culto PT-BR e adequação ao segmento",
+  "texto_revisado": "Versão definitiva aprimorada, polida e fluida do texto/legenda para leitura em smartphones",
   "melhorias": [
     "Melhoria 1...",
     "Melhoria 2...",
@@ -269,13 +248,15 @@ Retorne um JSON com:
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
-  const rawParecer = sanitizeKungFuTerms(data.parecer_tecnico) || 'Texto revisado e auditado conforme o padrão culto brasileiro e terminologia de Kung Fu.';
-  const rawTextoRevisado = sanitizeKungFuTerms(data.texto_revisado) || sanitizeKungFuTerms(step2Data.legenda);
-  const rawMelhorias = (Array.isArray(data.melhorias) ? data.melhorias : [
-    'Substituição e auditoria para terminologia tradicional de Kung Fu (Kwoon, Katis, Sifu)',
-    'Harmonização de concordância verbal e cadência rítmica mobile',
-    'Eliminação de ambiguidades e reforço do tom de voz acolhedor e disciplinado'
-  ]).map((m) => sanitizeKungFuTerms(m));
+  const rawParecer = data.parecer_tecnico || `Texto revisado com sucesso. Concordância e pontuação ajustadas ao padrão culto brasileiro, com vocabulário perfeitamente alinhado a ${semantics.niche}.`;
+  const rawTextoRevisado = data.texto_revisado || step2Data.legenda;
+  const rawMelhorias = Array.isArray(data.melhorias) && data.melhorias.length > 0
+    ? data.melhorias
+    : [
+        `Harmonização de concordância verbal e adequação terminológica para ${semantics.niche}`,
+        'Cadência rítmica aprimorada para leitura dinâmica em dispositivos móveis',
+        'Eliminação de redundâncias e reforço da clareza da chamada para ação',
+      ];
 
   const card = {
     id: 'card-3',
@@ -307,6 +288,7 @@ Retorne um JSON com:
     ],
     copyPayload: `[REVISÃO TEXTUAL PT-BR]
 Especialista: Profª. Beatriz Alencar (${provider})
+Nicho: ${semantics.niche}
 Parecer: ${rawParecer}
 
 Texto Final Revisado:
@@ -324,139 +306,71 @@ ${rawMelhorias.map((m) => `✓ ${m}`).join('\n')}`,
 }
 
 /**
- * ARSENAL DE ESTILOS VISUAIS PARA O DIRETOR DE ARTE (CARD 04)
- * Sorteio aleatório entre 6 direções estritamente distintas para garantir não-repetição
+ * ARSENAL DE COMPOSIÇÕES VISUAIS AGNOSTICAS PARA O DIRETOR DE ARTE (CARD 04)
+ * Sorteio aleatório entre 6 estéticas e enquadramentos de alto impacto comercial
  */
 export const ART_DIRECTOR_STYLES = [
   {
-    id: 'editorial_esportivo_movimento',
-    name: 'Fotografia Editorial Esportiva em Movimento Rápido',
+    id: 'editorial_comercial_dinamico',
+    name: 'Fotografia Editorial Comercial em Movimento / Ação',
     camera: 'Sony A1 com lente Sony FE 24-70mm f/2.8 GM II (shutter speed 1/1200s, tracking contínuo)',
-    angle: 'Ângulo dinâmico e baixo (low-angle Dutch tilt) capturando a impulsão e velocidade',
-    lighting: 'Luz natural lateral intensa cortada por janelas amplas do Kwoon contemporâneo, partículas de magnésio iluminadas em rim light dourada',
+    angle: 'Ângulo dinâmico e envolvente capturando a energia e velocidade da ação',
+    lighting: 'Luz natural lateral intensa cortada por janelas amplas do ambiente contemporâneo, partículas de luz volumétrica e rim light dourada',
     paletteName: 'Energia & Alta Performance',
-    description: 'Ação dinâmica em Kwoon contemporâneo com piso emborrachado preto fosco, praticante em salto ou chute giratório perfeitamente alinhado, foco congelado em altíssima definição no estilo Nike/Red Bull Sports Photography.',
-    midjourneyGuidance: 'High-speed action sports editorial photography, dynamic low angle Dutch tilt, crisp motion freeze at 1/1200s, Sony A1 24-70mm f/2.8 GM II, volumetric daylight streaming through modern martial arts Kwoon windows, authentic Kung Fu uniform, athletic intensity, golden rim light'
+    description: 'Cena comercial dinâmica com alta definição de movimento congelado, ambiente contemporâneo iluminado e estética editorial premium.',
+    midjourneyGuidance: 'High-speed commercial editorial action photography, dynamic perspective, crisp motion freeze at 1/1200s, Sony A1 24-70mm f/2.8 GM II, volumetric daylight streaming through modern windows, authentic kinetic energy, commercial grade photography'
   },
   {
     id: 'retrato_cinematografico_closeup',
     name: 'Retrato Cinematográfico Close-Up Emocional',
-    camera: 'Hasselblad H6D-100c com lente HC 100mm f/2.2 (foco cravado na íris)',
-    angle: 'Eye-level close-up dramático e intimista, enquadramento fechado destacando a expressão facial',
-    lighting: 'Chiaroscuro suave com softbox octagonal de 120cm a 45 graus, contraluz sutil delineando os ombros e fios de cabelo',
-    paletteName: 'Resiliência & Determinação Emocional',
-    description: 'Foco cirúrgico na determinação dos olhos do praticante/criança, microgotas de suor realistas refletindo luz tênue, faixa amarrada na cintura ou mãos enfaixadas, expressando superação e confiança inabalável.',
-    midjourneyGuidance: 'Intimate cinematic emotional close-up portrait, Hasselblad H6D-100c HC 100mm f/2.2, dramatic chiaroscuro studio softbox lighting, shallow depth of field, sharp focus on intense determined eyes, subtle perspiration on brow, authentic traditional Chinese Kung Fu discipline, hyper-detailed skin texture'
+    camera: 'Hasselblad H6D-100c com lente HC 100mm f/2.2 (foco cirúrgico na expressão)',
+    angle: 'Eye-level close-up intimista, enquadramento fechado destacando a expressão e olhar autêntico',
+    lighting: 'Chiaroscuro suave com softbox octagonal a 45 graus, contraluz sutil delineando os contornos',
+    paletteName: 'Resiliência & Conexão Emocional',
+    description: 'Foco nos olhos e na expressão autêntica, profundidade de campo rasa, textura natural de pele e iluminação cinematográfica de estúdio.',
+    midjourneyGuidance: 'Intimate cinematic emotional close-up portrait, Hasselblad H6D-100c HC 100mm f/2.2, dramatic chiaroscuro softbox studio lighting, shallow depth of field, sharp focus on genuine eyes and expression, hyper-detailed natural skin texture'
   },
   {
-    id: 'documental_postural_sifu',
-    name: 'Documental Autêntico / Correção Postural Guiada pelo Sifu',
+    id: 'documental_conexao_humana',
+    name: 'Documental Autêntico de Atendimento & Conexão Humana',
     camera: 'Canon EOS R5 C com lente RF 50mm f/1.2L USM (perspectiva humana e orgânica)',
-    angle: 'Plano médio em três quartos (three-quarter medium shot), capturando a conexão mestre-discípulo',
-    lighting: 'Luz ambiente acolhedora e difusa de final de tarde (golden hour), sombras suaves e atmosfera de respeito e acolhimento',
-    paletteName: 'Tradição, Sabedoria & Linhagem',
-    description: 'Cena documental autêntica de ensino tradicional: o Sifu experiente e paciente ajustando a postura de punho ou base (Ma Bu) de uma criança no Kwoon, transmitindo segurança, disciplina e carinho pedagógico.',
-    midjourneyGuidance: 'Documentary storytelling photography in an authentic Chinese Kung Fu Kwoon, an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful master-disciple connection, natural candid expressions'
+    angle: 'Plano médio em três quartos capturando a interação genuína e confiança entre especialista e cliente',
+    lighting: 'Luz ambiente acolhedora de fim de tarde (golden hour), sombras suaves e atmosfera de respeito e acolhimento',
+    paletteName: 'Acolhimento, Confiança & Humanização',
+    description: 'Momento documental espontâneo de escuta, orientação ou atendimento entre profissional e cliente em ambiente autêntico.',
+    midjourneyGuidance: 'Documentary storytelling photography, authentic interaction between dedicated specialist and client, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful trust-building connection, natural candid expressions'
   },
   {
-    id: 'treino_equipamentos_intensidade',
-    name: 'Treino Prático de Alta Intensidade com Equipamentos',
-    camera: 'Nikon Z9 com lente Nikkor Z 85mm f/1.2 S (nitidez extrema nos pontos de impacto)',
-    angle: 'Ângulo médio lateral dinâmico, revelando a biomecânica do golpe contra o alvo',
-    lighting: 'Iluminação esportiva de alta precisão com dois refletores LED em contra-eixo e luz de recorte branca 5600K',
-    paletteName: 'Foco, Impacto & Agilidade Motora',
-    description: 'Praticante em treino explosivo com manoplas de foco, saco de areia pesado ou bastão infantil (Gun), demonstrando coordenação motora refinada, reflexos rápidos e vigor físico contagiante no centro de treinamento.',
-    midjourneyGuidance: 'High-intensity martial arts training session, striking focus mitts and sandbags in a modern Chinese Kung Fu gym, dynamic impact frame, Nikon Z9 85mm f/1.2 S, crisp sports studio lighting with white rim lights, kinetic energy, authentic technique and agile footwork'
+    id: 'treino_pratica_equipamentos',
+    name: 'Cena Prática de Alta Performance & Detalhes do Ofício',
+    camera: 'Nikon Z9 com lente Nikkor Z 85mm f/1.2 S (nitidez extrema nos instrumentos e ações)',
+    angle: 'Ângulo médio lateral dinâmico revelando os detalhes técnicos e execução prática',
+    lighting: 'Iluminação de estúdio profissional com luz de recorte 5600K e refletores direcionais',
+    paletteName: 'Precisão, Maestria & Detalhes Técnicos',
+    description: 'Enquadramento focado na execução de alta precisão, ferramentas ou equipamentos especializados e atmosfera profissional.',
+    midjourneyGuidance: 'High-performance professional craftsmanship scene, focused hands-on execution and specialized tools, Nikon Z9 85mm f/1.2 S, crisp studio commercial lighting with white rim lights, kinetic precision, authentic textures and environmental atmosphere'
   },
   {
     id: 'poster_minimalista_espaco_negativo',
     name: 'Pôster Publicitário Minimalista com Amplo Espaço Negativo',
     camera: 'Fujifilm GFX 100 II com lente GF 110mm f/2 R LM WR (formato médio ultra-nítido)',
-    angle: 'Composição assimétrica em regra dos terços com 60% de espaço negativo clean para inserção de títulos e logos',
-    lighting: 'Luz zenital dramática (overhead spotlight / rim light) sobre fundo gradiente escuro e minimalista',
+    angle: 'Composição assimétrica em regra dos terços com 60% de espaço negativo clean para inserção de tipografia',
+    lighting: 'Luz zenital dramática (overhead spotlight / rim light) sobre fundo gradiente sofisticado e minimalista',
     paletteName: 'Minimalismo Editorial de Luxo',
-    description: 'Silhueta elegante e perfeitamente escupida de uma base marcial clássica (ex: Gong Bu ou Xie Bu), posicionada no terço inferior direito, com espaço generoso e limpo para diagramação e tipografia institucional.',
-    midjourneyGuidance: 'Minimalist luxury commercial sports advertising poster, solitary martial artist performing sharp Kung Fu stance silhouette, generous clean dark negative space for typography, Fujifilm GFX 100 II 110mm f/2, dramatic single overhead spotlight, sophisticated dark gradient background, ultra-clean composition'
+    description: 'Composição com sujeito herói em silhueta ou recorte nítido e amplo espaço negativo limpo para aplicação de tipografia institucional.',
+    midjourneyGuidance: 'Minimalist luxury commercial advertising poster, solitary hero silhouette or subject positioned in lower third, generous clean dark negative space for typography, Fujifilm GFX 100 II 110mm f/2, dramatic directional spotlight, sophisticated modern background, ultra-clean composition'
   },
   {
-    id: 'tradicao_solene_saudacao',
-    name: 'Tradição Marcial Solene / Saudação Bingbu Li & Baishi',
-    camera: 'Leica SL2 com lente Summilux-SL 50mm f/1.4 ASPH (textura orgânica e tons cinematográficos)',
-    angle: 'Plano frontal solene e simétrico, transmitindo solenidade, código moral e linhagem marcial',
-    lighting: 'Luz suave de lanternas e painéis reflexivos, tons quentes de âmbar e bronze realçando os detalhes do uniforme',
-    paletteName: 'Honra, Código Marcial & Reverência',
-    description: 'O ritual solene da saudação tradicional de Kung Fu (Bingbu Li: punho direito cerrado contra a palma esquerda espalmada em sinal de respeito mútuo), olhar sereno e focado, honrando o código Wude e os valores do Kwoon.',
-    midjourneyGuidance: 'Solemn traditional Chinese martial arts salute Bingbu Li, closed right fist meeting open left palm in reverence, Leica SL2 Summilux 50mm f/1.4, warm amber lanterns and directional bronze rim light, dignified gaze, honoring the ancient Wude martial code in a refined authentic Kwoon'
+    id: 'tradicao_institucional_excelencia',
+    name: 'Cena Institucional Solene / Tradição, Confiança & Excelência',
+    camera: 'Leica SL2 com lente Summilux-SL 50mm f/1.4 ASPH (textura orgânica e tons cinematográficos clássicos)',
+    angle: 'Plano frontal solene e equilibrado, transmitindo autoridade, valores nobres e reputação sólida',
+    lighting: 'Luz suave acolhedora, tons quentes e bronze realçando a solidez e requinte do espaço',
+    paletteName: 'Autoridade, Prestígio & Legado',
+    description: 'Retrato institucional de grande presença e dignidade, celebrando a credibilidade, tradição e excelência de atendimento.',
+    midjourneyGuidance: 'Solemn prestigious commercial brand portrait celebrating heritage, trust and excellence, Leica SL2 Summilux 50mm f/1.4, warm ambient lighting and directional bronze rim light, dignified presence, honoring quality and expertise in a refined setting'
   }
 ];
-
-/**
- * Garante estritamente a conformidade de faixa etária e restrições negativas no prompt de imagem
- */
-export function enforceAgeRequirements(promptText, isKidsTheme, styleId) {
-  if (!promptText || typeof promptText !== 'string') return promptText;
-  let text = promptText.trim();
-
-  if (!isKidsTheme) {
-    return text;
-  }
-
-  // 1. Cena guiada pelo Sifu ("Correção Postural Guiada pelo Sifu")
-  if (styleId === 'documental_postural_sifu') {
-    const requiredSifuSubject =
-      'an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student';
-    const negativeConstraint =
-      'no bodybuilders, no teenage athletes, young child student with adult master Sifu';
-
-    if (
-      !text.toLowerCase().includes('patiently guiding and correcting') &&
-      !text.toLowerCase().includes('young 7-year-old child')
-    ) {
-      text = `${requiredSifuSubject}, ${text}`;
-    }
-
-    if (
-      !text.toLowerCase().includes('no bodybuilders') &&
-      !text.toLowerCase().includes('no teenage athletes')
-    ) {
-      const arIndex = text.indexOf('--ar');
-      if (arIndex !== -1) {
-        text = `${text.slice(0, arIndex).trim()}, ${negativeConstraint} ${text.slice(arIndex).trim()}`;
-      } else {
-        text = `${text}, ${negativeConstraint}`;
-      }
-    }
-
-    return text;
-  }
-
-  // 2. Demais estilos para campanhas infantis (6 a 10 anos)
-  const requiredKidsSubject =
-    'authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing';
-  const requiredNegative =
-    'no adults, no bodybuilders, no teenage athletes, focus exclusively on young children';
-
-  if (
-    !text.toLowerCase().includes('children (aged 6 to 10 years old)') &&
-    !text.toLowerCase().includes('little kids kung fu students')
-  ) {
-    text = `${requiredKidsSubject}, ${text}`;
-  }
-
-  if (
-    !text.toLowerCase().includes('no adults') ||
-    !text.toLowerCase().includes('no bodybuilders')
-  ) {
-    const arIndex = text.indexOf('--ar');
-    if (arIndex !== -1) {
-      text = `${text.slice(0, arIndex).trim()}, ${requiredNegative} ${text.slice(arIndex).trim()}`;
-    } else {
-      text = `${text}, ${requiredNegative}`;
-    }
-  }
-
-  return text;
-}
 
 /**
  * ETAPA 4: Diretor de Arte
@@ -466,112 +380,46 @@ export async function executeStep4({ theme, brandProfile, step1Data }) {
   const primaryColor = brandProfile?.primary_color || '#111827';
   const accentColor = brandProfile?.accent_color || '#EAB308';
 
-  // Análise crítica de faixa etária: detecta tema e público infantil
-  const combinedContext = `${theme || ''} ${brandProfile?.target_audience || ''} ${step1Data?.objetivo || ''} ${step1Data?.gancho || ''}`;
-  const isKidsTheme = /(crian[çc]a|crian[çc]as|infantil|escolar|filhos?|kids?|pequenos?|mirim)/i.test(combinedContext);
-
-  // Sorteio dinâmico estrito de um dos 6 estilos visuais para variação radical
+  const semantics = extractThemeSemantics(theme, brandProfile);
   const selectedStyle = ART_DIRECTOR_STYLES[Math.floor(Math.random() * ART_DIRECTOR_STYLES.length)];
 
-  let midjourneyStyleGuidance = selectedStyle.midjourneyGuidance;
-  let negativeConstraints = '';
-
-  if (isKidsTheme) {
-    if (selectedStyle.id === 'documental_postural_sifu') {
-      midjourneyStyleGuidance =
-        'Documentary storytelling photography in an authentic Chinese Kung Fu Kwoon, an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful master-disciple connection, natural candid expressions';
-      negativeConstraints = 'no bodybuilders, no teenage athletes, young child student with adult master Sifu';
-    } else {
-      midjourneyStyleGuidance = `${selectedStyle.midjourneyGuidance}, authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing`;
-      negativeConstraints = 'no adults, no bodybuilders, no teenage athletes, focus exclusively on young children';
-    }
-  }
-
-  const ageDirectiveSystem = isKidsTheme
-    ? `DIRETRIZ CRÍTICA DE FAIXA ETÁRIA (CAMPANHA INFANTIL DETECTADA):
-- O tema da campanha é voltado ESTRITAMENTE para CRIANÇAS (faixa etária de 6 a 10 anos).
-- O "prompt_midjourney" (redigido em inglês) DEVE CONTER OBRIGATORIAMENTE os seguintes termos:
-  ${
-    selectedStyle.id === 'documental_postural_sifu'
-      ? '"an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student"'
-      : '"authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing..."'
-  }
-- O "prompt_midjourney" DEVE CONTER OBRIGATORIAMENTE a restrição negativa:
-  ${
-    selectedStyle.id === 'documental_postural_sifu'
-      ? '"no bodybuilders, no teenage athletes, young child student with adult master Sifu"'
-      : '"no adults, no bodybuilders, no teenage athletes, focus exclusively on young children"'
-  }
-- É TERMINANTEMENTE PROIBIDO retratar adultos, adolescentes ou fisiculturistas (exceto o Sifu adulto paciente corrigindo a criança na cena de orientação).`
-    : `DIRETRIZ DE FAIXA ETÁRIA:
-- Tema voltado para adultos, adolescentes ou público geral. Pode utilizar atletas adultos contemporâneos em boa forma e postura técnica precisa.`;
-
   const systemPrompt = `Você é Rodrigo Fontes, Diretor de Arte Sênior e Especialista em Criação Visual com IA (Midjourney v6.1 / Flux Pro) para Campanhas Publicitárias de Alta Performance.
-Sua missão é desenvolver a identidade visual, hierarquia de layout, paleta de cores precisa e um PROMPT CINEMATOGRÁFICO EM INGLÊS dinâmico, hiper-realista e estritamente personalizado para a campanha.
-
-DIRETRIZES FUNDAMENTAIS DO DIRETOR DE ARTE:
-1. DINAMISMO OBRIGATÓRIO E PROIBIÇÃO ESTRITA DE REPETIÇÃO:
-   - Você NUNCA deve sugerir o mesmo cenário ou o estilo clichê e genérico de "crianças em templo antigo", monges em montanhas ou orientalismo caricato dos anos 70/80.
-   - O prompt gerado para a IA de Imagem DEVE SEGUIR ESTREITAMENTE O ESTILO VISUAL SORTEADO PARA ESTA EXECUÇÃO:
-     * ESTILO VISUAL SORTEADO: "${selectedStyle.name}"
-     * CÂMERA & LENTE OBRIGATÓRIA: ${selectedStyle.camera}
-     * ENQUADRAMENTO & ÂNGULO: ${selectedStyle.angle}
-     * ILUMINAÇÃO RECOMENDADA: ${selectedStyle.lighting}
-     * CONCEITO DE CENA: ${selectedStyle.description}
-     * DIRETRIZ MIDJOURNEY: ${midjourneyStyleGuidance}
-
-2. ${ageDirectiveSystem}
-
-3. ESPECIFICAÇÕES TÉCNICAS OBRIGATÓRIAS NO PROMPT MIDJOURNEY / FLUX:
-   - Especifique a câmera, lente e ângulo indicados acima.
-   - Cenário: Kwoon contemporâneo profissional ou centro de treinamento autêntico de Kung Fu chinês.
-   - Parâmetros técnicos obrigatórios no final do prompt: "--ar 4:5 --v 6.1 --style raw".
-
-4. CONFORMIDADE CULTURAL KUNG FU:
-   - Use rigorosamente "Kwoon" (ou traditional Chinese martial arts training hall) para o espaço de treino, "Sifu" para o mestre e "Katis" para as formas.
-   - É TERMINANTEMENTE PROIBIDO usar termos japoneses como "Dojo", "Kata" ou "Sensei" em qualquer parte da resposta.
-
-Retorne estritamente um JSON com as chaves: "paleta" (array de 4 objetos com name e hex), "layout_diretrizes", "prompt_midjourney".
-
-${CULTURAL_VOCABULARY_GUIDELINE}`;
+Sua missão é desenvolver a identidade visual, hierarquia de layout, paleta de cores precisa e um PROMPT CINEMATOGRÁFICO EM INGLÊS perfeitamente personalizado para a campanha.
+Nicho: ${semantics.niche}
+Sujeito Visual Inferido: ${semantics.visualSubject}
+Retorne estritamente um JSON com as chaves: "paleta" (array de 4 objetos com name e hex), "layout_diretrizes", "prompt_midjourney".`;
 
   const prompt = `Defina a direção de arte e o prompt visual cinematográfico exclusivo para a campanha:
 TEMA DA CAMPANHA: "${theme}"
+NICHO IDENTIFICADO: ${semantics.niche}
+SUJEITOS VISUAIS OBRIGATÓRIOS: ${semantics.visualSubject}
+RESTRIÇÕES NEGATIVAS: ${semantics.negativeConstraints}
 OBJETIVO ESTRATÉGICO: ${step1Data.objetivo}
 FORMATO SUGERIDO: ${step1Data.formato}
-GANCHO (HOOK): "${step1Data.gancho}"
 CORES INSTITUCIONAIS: Primária ${primaryColor}, Acento ${accentColor}
 ${brandContext}
 
-ESTILO VISUAL OBRIGATÓRIO PARA ESTA VARIAÇÃO:
+ESTILO VISUAL SORTEADO PARA ESTA EXECUÇÃO:
 Nome: ${selectedStyle.name}
 Câmera/Lente: ${selectedStyle.camera}
 Ângulo: ${selectedStyle.angle}
 Iluminação: ${selectedStyle.lighting}
-Inspiração Midjourney: ${midjourneyStyleGuidance}
-
-${ageDirectiveSystem}
+Inspiração Midjourney: ${selectedStyle.midjourneyGuidance}
 
 INSTRUÇÕES RIGOROSAS:
-1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}" e ao estilo sorteado "${selectedStyle.name}". NUNCA repita templos antigos ou orientalismo caricato.
-${
-  isKidsTheme
-    ? `2. FAIXA ETÁRIA INFANTIL (6 a 10 ANOS) OBRIGATÓRIA:
-   - Sujeito no prompt: ${
-     selectedStyle.id === 'documental_postural_sifu'
-       ? 'an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student'
-       : 'authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing...'
-   }
-   - Restrição obrigatória a incluir no prompt: "${negativeConstraints}"`
-    : ''
-}
-3. No "prompt_midjourney" (redigido em inglês cinematográfico e detalhado):
-   - Incorpore: ${midjourneyStyleGuidance}
-   - Especifique: ${selectedStyle.camera}, ${selectedStyle.lighting}
-   - Detalhe a ação, postura corporal precisa e expressão autêntica no Kwoon.
-   ${isKidsTheme ? `- Inclua a restrição negativa: "${negativeConstraints}"` : ''}
-   - Finalize com: 8k resolution, photorealistic commercial sports photography, natural skin texture --ar 4:5 --v 6.1 --style raw
-4. Em "layout_diretrizes" (em Português do Brasil): descreva a hierarquia visual, tipografia sugerida, paleta e uso estratégico do espaço negativo.
+1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}".
+   - Se o tema for padaria -> mostre pães artesanais, padeiro, forno rústico, farinha no ar.
+   - Se o tema for idosos / terceira idade -> mostre pessoas idosas ativas e saudáveis (60-75 anos).
+   - Se o tema for médico / advogado -> mostre médicos ou advogados em consultório/escritório executivo moderno.
+   - Se o tema for crianças -> mostre crianças de 6 a 10 anos.
+   - NUNCA force termos marciais ou crianças a menos que o tema cite explicitamente!
+2. No "prompt_midjourney" (em inglês cinematográfico):
+   - Comece descrevendo o sujeito visual: ${semantics.visualSubject}
+   - Incorpore: ${selectedStyle.midjourneyGuidance}
+   - Especifique a câmera (${selectedStyle.camera}) e iluminação (${selectedStyle.lighting})
+   - Adicione restrições: ${semantics.negativeConstraints}
+   - Finalize com: 8k resolution, photorealistic commercial photography, natural textures --ar 4:5 --v 6.1 --style raw
+3. Em "layout_diretrizes" (em PT-BR): descreva hierarquia, tipografia, paleta e uso do espaço negativo.
 
 Retorne um JSON com:
 {
@@ -582,7 +430,7 @@ Retorne um JSON com:
     { "name": "Contraste Puro", "hex": "#FFFFFF" }
   ],
   "layout_diretrizes": "Hierarquia visual detalhada, tipografia recomendada, composição de cena e distribuição do espaço negativo em Português do Brasil.",
-  "prompt_midjourney": "Cinematic photo prompt in English incorporating ${selectedStyle.name}, camera, lens, lighting, authentic action and parameters --ar 4:5 --v 6.1 --style raw"
+  "prompt_midjourney": "Cinematic photo prompt in English incorporating ${semantics.visualSubject}, camera, lens, lighting, authentic atmosphere and parameters --ar 4:5 --v 6.1 --style raw"
 }`;
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
@@ -593,18 +441,26 @@ Retorne um JSON com:
     { name: 'Ciano Acento', hex: '#06B6D4' },
     { name: 'Branco Texto', hex: '#FFFFFF' },
   ]).map((c) => ({
-    name: sanitizeKungFuTerms(c.name),
-    hex: c.hex,
-    class: `bg-[${c.hex}] text-white`,
+    name: c.name || 'Cor',
+    hex: c.hex || primaryColor,
+    class: `bg-[${c.hex || primaryColor}] text-white`,
   }));
 
-  const rawLayout = sanitizeKungFuTerms(data.layout_diretrizes) || 'Design contemporâneo de alto contraste com tipografia marcante e espaço negativo equilibrado.';
+  const rawLayout = data.layout_diretrizes || `Design contemporâneo de alto impacto para ${semantics.niche}, com tipografia marcante e espaço negativo equilibrado.`;
   
-  const basePrompt =
-    sanitizeKungFuTerms(data.prompt_midjourney) ||
-    `${midjourneyStyleGuidance}, authentic martial artists in modern Kwoon, ${selectedStyle.camera}, ${selectedStyle.lighting}, ${negativeConstraints ? negativeConstraints + ', ' : ''}photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
+  let rawPrompt = data.prompt_midjourney ||
+    `Cinematic commercial photography of ${semantics.visualSubject}, ${selectedStyle.midjourneyGuidance}, ${selectedStyle.camera}, ${selectedStyle.lighting}, ${semantics.negativeConstraints}, photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
 
-  const rawPrompt = enforceAgeRequirements(basePrompt, isKidsTheme, selectedStyle.id);
+  // Se por qualquer razão a IA externa omitiu o sujeito semântico, nós o garantimos no prompt
+  if (semantics.isBakery && !rawPrompt.toLowerCase().includes('bread') && !rawPrompt.toLowerCase().includes('baker')) {
+    rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+  } else if (semantics.isSenior && !rawPrompt.toLowerCase().includes('senior') && !rawPrompt.toLowerCase().includes('elderly')) {
+    rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+  } else if (semantics.isDoctorLawyer && !rawPrompt.toLowerCase().includes('doctor') && !rawPrompt.toLowerCase().includes('lawyer')) {
+    rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+  } else if (semantics.isKids && !rawPrompt.toLowerCase().includes('children') && !rawPrompt.toLowerCase().includes('kids')) {
+    rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+  }
 
   const card = {
     id: 'card-4',
@@ -620,7 +476,7 @@ Retorne um JSON com:
     sections: [
       {
         label: 'Direção Visual Sorteada (Variabilidade Ativa)',
-        content: `🎨 ${selectedStyle.name} • ${isKidsTheme ? 'Faixa Etária: Infantil (6 a 10 anos)' : 'Faixa Etária: Geral / Adultos'} • Setup: ${selectedStyle.camera}`,
+        content: `🎨 ${selectedStyle.name} • Nicho: ${semantics.niche} • Setup: ${selectedStyle.camera}`,
         type: 'highlight',
       },
       {
@@ -642,7 +498,7 @@ Retorne um JSON com:
     copyPayload: `[DIREÇÃO DE ARTE]
 Especialista: Rodrigo Fontes (${provider})
 Estilo Visual: ${selectedStyle.name}
-Faixa Etária Detectada: ${isKidsTheme ? 'Infantil (6 a 10 anos)' : 'Geral / Adultos'}
+Nicho Comercial: ${semantics.niche}
 Setup Técnico: ${selectedStyle.camera} | ${selectedStyle.angle}
 
 Cores:
@@ -657,7 +513,7 @@ ${rawPrompt}`,
 
   return {
     card,
-    rawData: { ...data, selectedStyle, isKidsTheme, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
+    rawData: { ...data, selectedStyle, semantics, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
     provider,
   };
 }
@@ -667,30 +523,26 @@ ${rawPrompt}`,
  */
 export async function executeStep5({ theme, brandProfile }) {
   const brandContext = getBrandContext(brandProfile);
+  const semantics = extractThemeSemantics(theme, brandProfile);
 
   const systemPrompt = `Você é Camila Siqueira, Lead de QA e Validação Técnica de Mídia Digital.
-Sua missão é checar especificações técnicas (proporção 4:5 e 9:16, safe-zones, contraste), auditar conformidade cultural com a tradição do Kung Fu e sugerir os 3 melhores horários de publicação.
-Retorne estritamente um JSON com as chaves: "checklist" (array de 4 itens com label e detail) e "horarios_sugeridos" (array de 3 itens com day, time, reason).
-
-${CULTURAL_VOCABULARY_GUIDELINE}`;
+Sua missão é checar especificações técnicas (proporção 4:5 e 9:16, safe-zones, contraste WCAG AAA), coerência da mensagem para o nicho de ${semantics.niche} e sugerir os 3 melhores horários de publicação.
+Retorne estritamente um JSON com as chaves: "checklist" (array de 4 itens com label e detail) e "horarios_sugeridos" (array de 3 itens com day, time, reason).`;
 
   const prompt = `Analise os requisitos técnicos para a campanha:
 TEMA: "${theme}"
+NICHO: ${semantics.niche}
+PÚBLICO-ALVO: ${semantics.audience}
 MARCA E PÚBLICO:
 ${brandContext}
-
-DIRETRIZ DE QA CULTURAL E TÉCNICO:
-- Valide conformidade absoluta com o padrão culto PT-BR.
-- Audite para garantir ausência total de termos japoneses ("Dojo", "Kata", "Sensei") e presença da terminologia correta de Kung Fu ("Kwoon", "Katis", "Sifu").
-- No checklist, inclua a conformidade cultural e terminológica.
 
 Retorne um JSON com:
 {
   "checklist": [
     { "label": "Feed Vertical (Instagram/LinkedIn)", "detail": "1080 x 1350 px (4:5) Aprovado", "status": "pass" },
     { "label": "Stories & Reels Vertical", "detail": "1080 x 1920 px (9:16) Safe-zone 250px", "status": "pass" },
-    { "label": "Acessibilidade & Contraste WCAG", "detail": "Ratio > 7.5:1 Aprovado AAA", "status": "pass" },
-    { "label": "Auditoria Terminológica Kung Fu", "detail": "100% de termos chineses (Kwoon, Sifu, Katis) aprovados", "status": "pass" }
+    { "label": "Acessibilidade & Contraste WCAG", "detail": "Ratio > 7.5:1 Aprovado Nível AAA", "status": "pass" },
+    { "label": "Compliance & Tom de Voz do Segmento", "detail": "Mensagem e terminologia 100% alinhadas ao nicho de ${semantics.niche}", "status": "pass" }
   ],
   "horarios_sugeridos": [
     { "day": "Terça-feira", "time": "11:45", "reason": "Pico de busca pré-almoço e engajamento" },
@@ -701,26 +553,22 @@ Retorne um JSON com:
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
-  const rawChecklist = (Array.isArray(data.checklist) ? data.checklist : [
-    { label: 'Feed Vertical (Instagram/LinkedIn)', detail: '1080 x 1350 px (4:5)', status: 'pass' },
-    { label: 'Stories & Reels', detail: '1080 x 1920 px (9:16) safe-zone 250px', status: 'pass' },
-    { label: 'Contraste WCAG AAA', detail: 'Ratio 8.0:1 aprovado', status: 'pass' },
-    { label: 'Auditoria Cultural Kung Fu', detail: 'Terminologia Kwoon/Sifu/Katis validada', status: 'pass' },
-  ]).map((item) => ({
-    label: sanitizeKungFuTerms(item.label),
-    detail: sanitizeKungFuTerms(item.detail),
-    status: item.status || 'pass',
-  }));
+  const rawChecklist = Array.isArray(data.checklist) && data.checklist.length > 0
+    ? data.checklist
+    : [
+        { label: 'Feed Vertical (Instagram/LinkedIn)', detail: '1080 x 1350 px (4:5)', status: 'pass' },
+        { label: 'Stories & Reels', detail: '1080 x 1920 px (9:16) safe-zone 250px', status: 'pass' },
+        { label: 'Contraste WCAG AAA', detail: 'Ratio > 7.5:1 aprovado', status: 'pass' },
+        { label: 'Alinhamento Editorial', detail: `Terminologia e tom para ${semantics.niche} validados`, status: 'pass' },
+      ];
 
-  const rawHorarios = (Array.isArray(data.horarios_sugeridos) ? data.horarios_sugeridos : [
-    { day: 'Terça-feira', time: '11:45', reason: 'Engajamento pré-almoço' },
-    { day: 'Quinta-feira', time: '18:30', reason: 'Consumo mobile pós-expediente' },
-    { day: 'Domingo', time: '20:00', reason: 'Planejamento semanal' },
-  ]).map((h) => ({
-    day: sanitizeKungFuTerms(h.day),
-    time: h.time,
-    reason: sanitizeKungFuTerms(h.reason),
-  }));
+  const rawHorarios = Array.isArray(data.horarios_sugeridos) && data.horarios_sugeridos.length > 0
+    ? data.horarios_sugeridos
+    : [
+        { day: 'Terça-feira', time: '11:45', reason: 'Engajamento pré-almoço' },
+        { day: 'Quinta-feira', time: '18:30', reason: 'Consumo mobile pós-expediente' },
+        { day: 'Domingo', time: '20:00', reason: 'Planejamento semanal' },
+      ];
 
   const card = {
     id: 'card-5',
@@ -747,6 +595,7 @@ Retorne um JSON com:
     ],
     copyPayload: `[CONTROLE DE QUALIDADE - QA]
 Especialista: Camila Siqueira (${provider})
+Nicho: ${semantics.niche}
 Checklist:
 ${rawChecklist.map((c) => `- ${c.label}: ${c.detail}`).join('\n')}
 
@@ -766,29 +615,26 @@ ${rawHorarios.map((h) => `${h.day} às ${h.time} (${h.reason})`).join('\n')}`,
  */
 export async function executeStep6({ theme, brandProfile, step1Data }) {
   const brandContext = getBrandContext(brandProfile);
-  const city = brandProfile?.city || 'Brasil (Grandes Capitais)';
+  const semantics = extractThemeSemantics(theme, brandProfile);
+  const city = brandProfile?.city || 'Brasil';
 
   const systemPrompt = `Você é Thiago Ramos, Gestor de Tráfego Pago e Performance Media Buyer no Meta Ads e Google Ads.
-Sua missão é segmentar público-alvo geolocalizado com precisão, definir objetivo no Meta Ads e estipular orçamento diário mínimo para teste e escala.
-Retorne estritamente um JSON com as chaves: "publico_alvo", "raio_geografico", "objetivo_campanha", "orcamento" (objeto com testPhase, scalePhase, targetCPL, roasExpected).
-
-${CULTURAL_VOCABULARY_GUIDELINE}`;
+Sua missão é segmentar público-alvo com precisão para o nicho de ${semantics.niche}, definir objetivo de campanha no Meta Ads e estipular orçamento diário para teste e escala.
+Retorne estritamente um JSON com as chaves: "publico_alvo", "raio_geografico", "objetivo_campanha", "orcamento" (objeto com testPhase, scalePhase, targetCPL, roasExpected).`;
 
   const prompt = `Configure a campanha de tráfego pago para:
 TEMA: "${theme}"
+NICHO: ${semantics.niche}
+PÚBLICO-ALVO ESTIMADO: ${semantics.audience}
 OBJETIVO ESTRATÉGICO: ${step1Data.objetivo}
-LOCALIZAÇÃO DA MARCA: ${city}
+LOCALIZAÇÃO: ${city}
 ${brandContext}
-
-DIRETRIZES DE TRÁFEGO E VOCABULÁRIO:
-- Respeite estritamente o vocabulário tradicional do Kung Fu ("Kwoon", "Katis", "Sifu" - proibido "Dojo", "Kata" ou "Sensei").
-- Redija todas as descrições de público, objetivos e orçamentos rigorosamente em Português do Brasil.
 
 Retorne um JSON com:
 {
-  "publico_alvo": "Segmentação detalhada: idades, gênero, interesses específicos e comportamentos em Português do Brasil",
-  "raio_geografico": "Raio geográfico específico em ${city} e arredores estratégicos",
-  "objetivo_campanha": "Objetivo técnico de conversão no Meta Ads (ex: Geração de Cadastros com formulário instantâneo ou Mensagens para WhatsApp)",
+  "publico_alvo": "Segmentação detalhada: faixa de idade, gênero, interesses específicos de compra e comportamentos para ${semantics.niche}",
+  "raio_geografico": "Raio geográfico específico em ${city} ou segmentação estadual/nacional",
+  "objetivo_campanha": "Objetivo técnico de conversão no Meta Ads (ex: Geração de Cadastros / Mensagens WhatsApp)",
   "orcamento": {
     "testPhase": "R$ 40,00 / dia",
     "scalePhase": "R$ 150,00 / dia",
@@ -799,9 +645,9 @@ Retorne um JSON com:
 
   const { data, provider } = await generateMarketingAI({ systemPrompt, prompt });
 
-  const rawPublico = sanitizeKungFuTerms(data.publico_alvo) || 'Público local qualificado para conversão.';
-  const rawRaio = sanitizeKungFuTerms(data.raio_geografico) || city;
-  const rawObjetivo = sanitizeKungFuTerms(data.objetivo_campanha) || 'Geração de Cadastros (Leads Qualificados) no Meta Ads.';
+  const rawPublico = data.publico_alvo || `Público qualificado interessado em ${semantics.niche} (${semantics.audience}).`;
+  const rawRaio = data.raio_geografico || `Raio de 15km a 25km em ${city} e arredores`;
+  const rawObjetivo = data.objetivo_campanha || 'Geração de Cadastros Qualificados / Conversões no Meta Ads.';
 
   const card = {
     id: 'card-6',
@@ -843,6 +689,7 @@ Retorne um JSON com:
     ],
     copyPayload: `[TRÁFEGO PAGO]
 Especialista: Thiago Ramos (${provider})
+Nicho: ${semantics.niche}
 Público: ${rawPublico}
 Geografia: ${rawRaio}
 Objetivo: ${rawObjetivo}
@@ -959,35 +806,33 @@ export function formatHistoryRecordToCards(record) {
     sections: [
       {
         label: 'Objetivo Principal',
-        content: sanitizeKungFuTerms(strat.objetivo) || 'Objetivo registrado no histórico.',
+        content: strat.objetivo || 'Objetivo registrado no histórico.',
         type: 'text',
       },
       {
         label: 'Formato Recomendado',
-        content: sanitizeKungFuTerms(strat.formato) || 'Carrossel / Conteúdo Multiplataforma',
+        content: strat.formato || 'Carrossel / Conteúdo Multiplataforma',
         type: 'highlight',
       },
       {
         label: 'Gancho Principal (Hook)',
         content: strat.gancho
-          ? `“${sanitizeKungFuTerms(strat.gancho)}”`
-          : `“${sanitizeKungFuTerms(record.topic)}”`,
+          ? `“${strat.gancho}”`
+          : `“${record.topic || 'Campanha'}”`,
         type: 'quote',
       },
     ],
     copyPayload: `[ESTRATÉGIA DE CONTEÚDO]
 Especialista: Dra. Helena Vasconcelos (Histórico Supabase)
-Objetivo: ${sanitizeKungFuTerms(strat.objetivo) || 'N/A'}
-Formato: ${sanitizeKungFuTerms(strat.formato) || 'N/A'}
-Gancho (Hook): "${sanitizeKungFuTerms(strat.gancho || record.topic)}"`,
+Objetivo: ${strat.objetivo || 'N/A'}
+Formato: ${strat.formato || 'N/A'}
+Gancho (Hook): "${strat.gancho || record.topic || 'N/A'}"`,
   };
 
   // Card 2: Copywriter
-  const rawTextosArte = (
-    Array.isArray(copy.textos_arte) ? copy.textos_arte : [copy.textos_arte || record.topic]
-  ).map((t) => sanitizeKungFuTerms(t));
-  const rawLegenda = sanitizeKungFuTerms(copy.legenda) || 'Legenda registrada no histórico.';
-  const rawCta = sanitizeKungFuTerms(copy.cta) || '👉 Clique no link da bio e saiba mais.';
+  const rawTextosArte = Array.isArray(copy.textos_arte) ? copy.textos_arte : [copy.textos_arte || record.topic || 'Conteúdo'];
+  const rawLegenda = copy.legenda || 'Legenda registrada no histórico.';
+  const rawCta = copy.cta || '👉 Clique no link e saiba mais.';
 
   const card2 = {
     id: 'card-2',
@@ -1029,19 +874,15 @@ CTA: ${rawCta}`,
   };
 
   // Card 3: Revisor Textual
-  const rawParecer =
-    sanitizeKungFuTerms(rev.parecer_tecnico) || 'Texto revisado e aprovado no padrão culto brasileiro.';
-  const rawTextoRevisado =
-    sanitizeKungFuTerms(rev.texto_revisado) || sanitizeKungFuTerms(copy.legenda) || 'Versão final revisada.';
-  const rawMelhorias = (
-    Array.isArray(rev.melhorias)
-      ? rev.melhorias
-      : [
-          'Auditoria e harmonização terminológica do Kung Fu (Kwoon, Katis, Sifu)',
-          'Cadência de leitura mobile',
-          'Eliminação de repetições',
-        ]
-  ).map((m) => sanitizeKungFuTerms(m));
+  const rawParecer = rev.parecer_tecnico || 'Texto revisado e aprovado no padrão culto brasileiro.';
+  const rawTextoRevisado = rev.texto_revisado || copy.legenda || 'Versão final revisada.';
+  const rawMelhorias = Array.isArray(rev.melhorias)
+    ? rev.melhorias
+    : [
+        'Adequação gramatical e ortográfica segundo a norma-padrão',
+        'Cadência de leitura fluida para smartphones',
+        'Eliminação de repetições e reforço da clareza',
+      ];
 
   const card3 = {
     id: 'card-3',
@@ -1093,15 +934,13 @@ ${rawMelhorias.map((m) => `✓ ${m}`).join('\n')}`,
           { name: 'Texto Neutro', hex: '#FFFFFF' },
         ]
   ).map((c) => ({
-    name: sanitizeKungFuTerms(c.name || 'Cor'),
+    name: c.name || 'Cor',
     hex: c.hex || '#111827',
     class: `bg-[${c.hex || '#111827'}] text-white`,
   }));
 
-  const rawLayout = sanitizeKungFuTerms(des.layout_diretrizes) || 'Diretrizes visuais salvas no histórico.';
-  const rawPrompt =
-    sanitizeKungFuTerms(des.prompt_midjourney) ||
-    'Cinematic commercial photography of authentic Chinese Kung Fu Kwoon --ar 4:5 --v 6.1';
+  const rawLayout = des.layout_diretrizes || 'Diretrizes visuais salvas no histórico.';
+  const rawPrompt = des.prompt_midjourney || 'Cinematic commercial photography --ar 4:5 --v 6.1 --style raw';
 
   const card4 = {
     id: 'card-4',
@@ -1152,8 +991,8 @@ ${rawPrompt}`,
           { label: 'Stories & Reels', detail: '1080 x 1920 px (9:16)', status: 'pass' },
         ]
   ).map((c) => ({
-    label: sanitizeKungFuTerms(c.label),
-    detail: sanitizeKungFuTerms(c.detail),
+    label: c.label || 'Item de Checagem',
+    detail: c.detail || 'Aprovado',
     status: c.status || 'pass',
   }));
 
@@ -1165,9 +1004,9 @@ ${rawPrompt}`,
           { day: 'Quinta-feira', time: '18:30', reason: 'Mobile pós-expediente' },
         ]
   ).map((h) => ({
-    day: sanitizeKungFuTerms(h.day),
-    time: h.time,
-    reason: sanitizeKungFuTerms(h.reason),
+    day: h.day || 'Dia',
+    time: h.time || '12:00',
+    reason: h.reason || 'Melhor horário',
   }));
 
   const card5 = {
@@ -1203,9 +1042,9 @@ ${rawHorarios.map((h) => `${h.day} às ${h.time} (${h.reason})`).join('\n')}`,
   };
 
   // Card 6: Tráfego Pago
-  const rawPublico = sanitizeKungFuTerms(traf.publico_alvo) || 'Público salvo no histórico.';
-  const rawRaio = sanitizeKungFuTerms(traf.raio_geografico) || 'Região da campanha.';
-  const rawObjetivoTrafego = sanitizeKungFuTerms(traf.objetivo_campanha) || 'Objetivo de tráfego.';
+  const rawPublico = traf.publico_alvo || 'Público salvo no histórico.';
+  const rawRaio = traf.raio_geografico || 'Região da campanha.';
+  const rawObjetivoTrafego = traf.objetivo_campanha || 'Objetivo de tráfego.';
 
   const card6 = {
     id: 'card-6',

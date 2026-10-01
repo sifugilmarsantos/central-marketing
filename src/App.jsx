@@ -195,19 +195,19 @@ export default function App() {
     try {
       const activeTheme =
         theme?.trim() ||
-        'Aulas de Kung Fu Infantil: foco, disciplina e autoconfiança em Londrina';
+        'Lançamento de novos serviços e captação de clientes qualificados';
 
       // Extract Step 1 strategic data from current card-1 state
       const step1Card = cardsData.find((c) => c.stepNumber === 1);
       const step1Obj =
         step1Card?.sections?.find((s) => s.label.includes('Objetivo'))?.content ||
-        'Posicionamento de autoridade e captação de novos alunos qualificados';
+        'Posicionamento de autoridade e captação de clientes qualificados';
       const step1Fmt =
         step1Card?.sections?.find((s) => s.label.includes('Formato'))?.content ||
         'Carrossel Dinâmico de 5 lâminas (1080x1350 - proporção 4:5)';
       const step1Gnc =
         step1Card?.sections?.find((s) => s.label.includes('Gancho'))?.content ||
-        `“Descubra como o Kung Fu desenvolve foco inabalável, respeito e disciplina autêntica.”`;
+        `“Descubra como transformar seus resultados e acelerar seu crescimento com soluções de alto padrão.”`;
       const step1Data = {
         objetivo: step1Obj,
         formato: step1Fmt,
