@@ -368,6 +368,8 @@ function generateContextualFallback({ systemPrompt, prompt }) {
 
   // 4. Diretor de Arte (Variabilidade Radical entre 6 Estilos)
   if (systemPrompt.includes('Diretor de Arte') || prompt.includes('prompt_midjourney')) {
+    const isKidsContext = /(crian[çc]a|crian[çc]as|infantil|escolar|filhos?|kids?|pequenos?|mirim)/i.test(`${systemPrompt} ${prompt}`);
+
     const artStyles = [
       {
         palette: [
@@ -377,7 +379,9 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Branco Puro (Texto)', hex: '#FFFFFF' }
         ],
         layout: 'Fotografia editorial esportiva em movimento rápido. Plano médio dinâmico com ângulo plongée suave, congelamento de movimento em alta velocidade de obturador, tipografia Sans-Serif ultra-bold e espaço negativo para título.',
-        prompt: 'Cinematic sports editorial photography of dynamic Kung Fu martial artists executing high-speed jumping kick in contemporary clean training hall Kwoon, 1/2000s shutter speed motion freeze, Sony A7IV with 85mm f/1.4 GM lens, natural volumetric morning window daylight, crisp athletic uniforms, photorealistic 8k, ultra-sharp details --ar 4:5 --v 6.1 --style raw'
+        prompt: isKidsContext
+          ? 'Cinematic sports editorial photography of authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing high-speed jump kick in contemporary clean Kwoon, 1/2000s shutter speed motion freeze, Sony A7IV with 85mm f/1.4 GM lens, natural volumetric window daylight, crisp athletic uniforms, photorealistic 8k, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
+          : 'Cinematic sports editorial photography of dynamic Kung Fu martial artists executing high-speed jumping kick in contemporary clean training hall Kwoon, 1/2000s shutter speed motion freeze, Sony A7IV with 85mm f/1.4 GM lens, natural volumetric morning window daylight, crisp athletic uniforms, photorealistic 8k, ultra-sharp details --ar 4:5 --v 6.1 --style raw'
       },
       {
         palette: [
@@ -387,7 +391,9 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Branco Gelo (Contraste)', hex: '#F8FAFC' }
         ],
         layout: 'Retrato cinematográfico close-up emocional. Foco absoluto no olhar marcial intenso, determinação e suor sutil na fronte. Iluminação chiaroscuro dramática com corte dourado e profundidade de campo rasa.',
-        prompt: 'Intense cinematic close-up portrait of dedicated martial artist in modern authentic Kwoon, subtle sweat on brow, fierce focused eyes, dramatic golden rim light, Canon EOS R5 with 85mm f/1.2 lens at f/1.4, creamy dark bokeh, high-contrast chiaroscuro, natural skin texture, 8k resolution --ar 4:5 --v 6.1 --style raw'
+        prompt: isKidsContext
+          ? 'Intense cinematic close-up portrait of authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing, subtle sweat on brow, fierce focused innocent eyes, dramatic golden rim light, Canon EOS R5 with 85mm f/1.2 lens at f/1.4, creamy dark bokeh, natural skin texture, 8k resolution, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
+          : 'Intense cinematic close-up portrait of dedicated martial artist in modern authentic Kwoon, subtle sweat on brow, fierce focused eyes, dramatic golden rim light, Canon EOS R5 with 85mm f/1.2 lens at f/1.4, creamy dark bokeh, high-contrast chiaroscuro, natural skin texture, 8k resolution --ar 4:5 --v 6.1 --style raw'
       },
       {
         palette: [
@@ -397,7 +403,9 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Branco Marfim (Texto)', hex: '#FDFBF7' }
         ],
         layout: 'Cena documental autêntica de orientação e correção postural pelo Sifu. Enquadramento sobre o ombro (over-the-shoulder), iluminação suave e acolhedora, atmosfera solene de aprendizado.',
-        prompt: 'Documentary photojournalism style of respected Chinese Kung Fu Sifu master gently correcting a young student martial stance in clean authentic Kwoon, over-the-shoulder medium shot, Leica SL2 with 50mm f/1.2 Summilux prime, warm diffused ambient light, genuine respect and mentorship, photorealistic 8k --ar 4:5 --v 6.1 --style raw'
+        prompt: isKidsContext
+          ? 'Documentary photojournalism style in authentic Chinese Kung Fu Kwoon, an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student, over-the-shoulder medium shot, Leica SL2 with 50mm f/1.2 Summilux prime, warm diffused ambient light, genuine respect and mentorship, photorealistic 8k, no bodybuilders, no teenage athletes, young child student with adult master Sifu --ar 4:5 --v 6.1 --style raw'
+          : 'Documentary photojournalism style of respected Chinese Kung Fu Sifu master gently correcting a young student martial stance in clean authentic Kwoon, over-the-shoulder medium shot, Leica SL2 with 50mm f/1.2 Summilux prime, warm diffused ambient light, genuine respect and mentorship, photorealistic 8k --ar 4:5 --v 6.1 --style raw'
       },
       {
         palette: [
@@ -407,7 +415,9 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Branco Puro (Texto)', hex: '#FFFFFF' }
         ],
         layout: 'Treino de alta intensidade com equipamentos marciais. Prática potente com sacos de areia suspensos, manoplas de foco e bastão chinês Gun. Composição esportiva de alto rendimento.',
-        prompt: 'High-intensity athletic martial arts training in modern Kwoon athletic center, practitioner striking heavy sandbags with focus pads, dynamic motion, Sony FX3 with 35mm f/1.4 GM cinema lens, directional top softbox lighting with energetic rim accents, hyper-realistic sports photography 8k --ar 4:5 --v 6.1 --style raw'
+        prompt: isKidsContext
+          ? 'High-intensity athletic martial arts training in modern Kwoon athletic center, authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing striking focus mitts and sandbags, Sony FX3 with 35mm f/1.4 GM lens, directional top softbox lighting, hyper-realistic sports photography 8k, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
+          : 'High-intensity athletic martial arts training in modern Kwoon athletic center, practitioner striking heavy sandbags with focus pads, dynamic motion, Sony FX3 with 35mm f/1.4 GM cinema lens, directional top softbox lighting with energetic rim accents, hyper-realistic sports photography 8k --ar 4:5 --v 6.1 --style raw'
       },
       {
         palette: [
@@ -417,7 +427,9 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Branco Titânio (Texto)', hex: '#FFFFFF' }
         ],
         layout: 'Composição de pôster publicitário minimalista com amplo espaço negativo limpo no terço esquerdo para aplicação de tipografia comercial e logotipo. Equilíbrio assimétrico sofisticado.',
-        prompt: 'Minimalist commercial advertising poster photography, silhouette and rim light of martial artist in poised stance against clean negative space, Hasselblad H6D-100c medium format camera, sleek modern athletic Kwoon background, pristine commercial grade clarity, deep rich contrast --ar 4:5 --v 6.1 --style raw'
+        prompt: isKidsContext
+          ? 'Minimalist commercial advertising poster photography, silhouette and rim light of authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students in poised martial stance against clean negative space, Hasselblad H6D-100c medium format camera, sleek modern athletic Kwoon background, pristine commercial grade clarity, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
+          : 'Minimalist commercial advertising poster photography, silhouette and rim light of martial artist in poised stance against clean negative space, Hasselblad H6D-100c medium format camera, sleek modern athletic Kwoon background, pristine commercial grade clarity, deep rich contrast --ar 4:5 --v 6.1 --style raw'
       },
       {
         palette: [
@@ -427,7 +439,9 @@ function generateContextualFallback({ systemPrompt, prompt }) {
           { name: 'Branco Seda (Texto)', hex: '#FEF08A' }
         ],
         layout: 'Cena solene de tradição marcial e respeito. Enquadramento simétrico frontal com saudação tradicional Bingbu Li (Baishi) ou cerimônia de entrega de faixa, iluminação dourada serena.',
-        prompt: 'Solemn traditional Chinese martial ceremony in modern authentic Kwoon, respectful Bingbu Li martial salute with closed right fist against open left palm, Nikon Z9 with 85mm f/1.4 lens, soft dawn light streaming through windows, golden atmosphere, serene disciplined mood, 8k resolution --ar 4:5 --v 6.1 --style raw'
+        prompt: isKidsContext
+          ? 'Solemn traditional Chinese martial ceremony in modern authentic Kwoon, authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing respectful Bingbu Li martial salute with closed right fist against open left palm, Nikon Z9 with 85mm f/1.4 lens, soft dawn light streaming through windows, golden atmosphere, serene disciplined mood, 8k resolution, no adults, no bodybuilders, no teenage athletes, focus exclusively on young children --ar 4:5 --v 6.1 --style raw'
+          : 'Solemn traditional Chinese martial ceremony in modern authentic Kwoon, respectful Bingbu Li martial salute with closed right fist against open left palm, Nikon Z9 with 85mm f/1.4 lens, soft dawn light streaming through windows, golden atmosphere, serene disciplined mood, 8k resolution --ar 4:5 --v 6.1 --style raw'
       }
     ];
 

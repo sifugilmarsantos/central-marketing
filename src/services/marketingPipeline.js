@@ -356,7 +356,7 @@ export const ART_DIRECTOR_STYLES = [
     lighting: 'Luz ambiente acolhedora e difusa de final de tarde (golden hour), sombras suaves e atmosfera de respeito e acolhimento',
     paletteName: 'Tradição, Sabedoria & Linhagem',
     description: 'Cena documental autêntica de ensino tradicional: o Sifu experiente e paciente ajustando a postura de punho ou base (Ma Bu) de uma criança no Kwoon, transmitindo segurança, disciplina e carinho pedagógico.',
-    midjourneyGuidance: 'Documentary storytelling photography, authentic Chinese Kung Fu Kwoon, experienced revered Sifu gently guiding and correcting a young student horse stance Ma Bu posture, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful master-disciple connection, natural candid expressions'
+    midjourneyGuidance: 'Documentary storytelling photography in an authentic Chinese Kung Fu Kwoon, an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful master-disciple connection, natural candid expressions'
   },
   {
     id: 'treino_equipamentos_intensidade',
@@ -391,6 +391,74 @@ export const ART_DIRECTOR_STYLES = [
 ];
 
 /**
+ * Garante estritamente a conformidade de faixa etária e restrições negativas no prompt de imagem
+ */
+export function enforceAgeRequirements(promptText, isKidsTheme, styleId) {
+  if (!promptText || typeof promptText !== 'string') return promptText;
+  let text = promptText.trim();
+
+  if (!isKidsTheme) {
+    return text;
+  }
+
+  // 1. Cena guiada pelo Sifu ("Correção Postural Guiada pelo Sifu")
+  if (styleId === 'documental_postural_sifu') {
+    const requiredSifuSubject =
+      'an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student';
+    const negativeConstraint =
+      'no bodybuilders, no teenage athletes, young child student with adult master Sifu';
+
+    if (
+      !text.toLowerCase().includes('patiently guiding and correcting') &&
+      !text.toLowerCase().includes('young 7-year-old child')
+    ) {
+      text = `${requiredSifuSubject}, ${text}`;
+    }
+
+    if (
+      !text.toLowerCase().includes('no bodybuilders') &&
+      !text.toLowerCase().includes('no teenage athletes')
+    ) {
+      const arIndex = text.indexOf('--ar');
+      if (arIndex !== -1) {
+        text = `${text.slice(0, arIndex).trim()}, ${negativeConstraint} ${text.slice(arIndex).trim()}`;
+      } else {
+        text = `${text}, ${negativeConstraint}`;
+      }
+    }
+
+    return text;
+  }
+
+  // 2. Demais estilos para campanhas infantis (6 a 10 anos)
+  const requiredKidsSubject =
+    'authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing';
+  const requiredNegative =
+    'no adults, no bodybuilders, no teenage athletes, focus exclusively on young children';
+
+  if (
+    !text.toLowerCase().includes('children (aged 6 to 10 years old)') &&
+    !text.toLowerCase().includes('little kids kung fu students')
+  ) {
+    text = `${requiredKidsSubject}, ${text}`;
+  }
+
+  if (
+    !text.toLowerCase().includes('no adults') ||
+    !text.toLowerCase().includes('no bodybuilders')
+  ) {
+    const arIndex = text.indexOf('--ar');
+    if (arIndex !== -1) {
+      text = `${text.slice(0, arIndex).trim()}, ${requiredNegative} ${text.slice(arIndex).trim()}`;
+    } else {
+      text = `${text}, ${requiredNegative}`;
+    }
+  }
+
+  return text;
+}
+
+/**
  * ETAPA 4: Diretor de Arte
  */
 export async function executeStep4({ theme, brandProfile, step1Data }) {
@@ -398,8 +466,45 @@ export async function executeStep4({ theme, brandProfile, step1Data }) {
   const primaryColor = brandProfile?.primary_color || '#111827';
   const accentColor = brandProfile?.accent_color || '#EAB308';
 
+  // Análise crítica de faixa etária: detecta tema e público infantil
+  const combinedContext = `${theme || ''} ${brandProfile?.target_audience || ''} ${step1Data?.objetivo || ''} ${step1Data?.gancho || ''}`;
+  const isKidsTheme = /(crian[çc]a|crian[çc]as|infantil|escolar|filhos?|kids?|pequenos?|mirim)/i.test(combinedContext);
+
   // Sorteio dinâmico estrito de um dos 6 estilos visuais para variação radical
   const selectedStyle = ART_DIRECTOR_STYLES[Math.floor(Math.random() * ART_DIRECTOR_STYLES.length)];
+
+  let midjourneyStyleGuidance = selectedStyle.midjourneyGuidance;
+  let negativeConstraints = '';
+
+  if (isKidsTheme) {
+    if (selectedStyle.id === 'documental_postural_sifu') {
+      midjourneyStyleGuidance =
+        'Documentary storytelling photography in an authentic Chinese Kung Fu Kwoon, an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student, Canon EOS R5 RF 50mm f/1.2L, warm golden hour ambient lighting, respectful master-disciple connection, natural candid expressions';
+      negativeConstraints = 'no bodybuilders, no teenage athletes, young child student with adult master Sifu';
+    } else {
+      midjourneyStyleGuidance = `${selectedStyle.midjourneyGuidance}, authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing`;
+      negativeConstraints = 'no adults, no bodybuilders, no teenage athletes, focus exclusively on young children';
+    }
+  }
+
+  const ageDirectiveSystem = isKidsTheme
+    ? `DIRETRIZ CRÍTICA DE FAIXA ETÁRIA (CAMPANHA INFANTIL DETECTADA):
+- O tema da campanha é voltado ESTRITAMENTE para CRIANÇAS (faixa etária de 6 a 10 anos).
+- O "prompt_midjourney" (redigido em inglês) DEVE CONTER OBRIGATORIAMENTE os seguintes termos:
+  ${
+    selectedStyle.id === 'documental_postural_sifu'
+      ? '"an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student"'
+      : '"authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing..."'
+  }
+- O "prompt_midjourney" DEVE CONTER OBRIGATORIAMENTE a restrição negativa:
+  ${
+    selectedStyle.id === 'documental_postural_sifu'
+      ? '"no bodybuilders, no teenage athletes, young child student with adult master Sifu"'
+      : '"no adults, no bodybuilders, no teenage athletes, focus exclusively on young children"'
+  }
+- É TERMINANTEMENTE PROIBIDO retratar adultos, adolescentes ou fisiculturistas (exceto o Sifu adulto paciente corrigindo a criança na cena de orientação).`
+    : `DIRETRIZ DE FAIXA ETÁRIA:
+- Tema voltado para adultos, adolescentes ou público geral. Pode utilizar atletas adultos contemporâneos em boa forma e postura técnica precisa.`;
 
   const systemPrompt = `Você é Rodrigo Fontes, Diretor de Arte Sênior e Especialista em Criação Visual com IA (Midjourney v6.1 / Flux Pro) para Campanhas Publicitárias de Alta Performance.
 Sua missão é desenvolver a identidade visual, hierarquia de layout, paleta de cores precisa e um PROMPT CINEMATOGRÁFICO EM INGLÊS dinâmico, hiper-realista e estritamente personalizado para a campanha.
@@ -413,14 +518,16 @@ DIRETRIZES FUNDAMENTAIS DO DIRETOR DE ARTE:
      * ENQUADRAMENTO & ÂNGULO: ${selectedStyle.angle}
      * ILUMINAÇÃO RECOMENDADA: ${selectedStyle.lighting}
      * CONCEITO DE CENA: ${selectedStyle.description}
-     * DIRETRIZ MIDJOURNEY: ${selectedStyle.midjourneyGuidance}
+     * DIRETRIZ MIDJOURNEY: ${midjourneyStyleGuidance}
 
-2. ESPECIFICAÇÕES TÉCNICAS OBRIGATÓRIAS NO PROMPT MIDJOURNEY / FLUX:
+2. ${ageDirectiveSystem}
+
+3. ESPECIFICAÇÕES TÉCNICAS OBRIGATÓRIAS NO PROMPT MIDJOURNEY / FLUX:
    - Especifique a câmera, lente e ângulo indicados acima.
    - Cenário: Kwoon contemporâneo profissional ou centro de treinamento autêntico de Kung Fu chinês.
    - Parâmetros técnicos obrigatórios no final do prompt: "--ar 4:5 --v 6.1 --style raw".
 
-3. CONFORMIDADE CULTURAL KUNG FU:
+4. CONFORMIDADE CULTURAL KUNG FU:
    - Use rigorosamente "Kwoon" (ou traditional Chinese martial arts training hall) para o espaço de treino, "Sifu" para o mestre e "Katis" para as formas.
    - É TERMINANTEMENTE PROIBIDO usar termos japoneses como "Dojo", "Kata" ou "Sensei" em qualquer parte da resposta.
 
@@ -441,16 +548,30 @@ Nome: ${selectedStyle.name}
 Câmera/Lente: ${selectedStyle.camera}
 Ângulo: ${selectedStyle.angle}
 Iluminação: ${selectedStyle.lighting}
-Inspiração Midjourney: ${selectedStyle.midjourneyGuidance}
+Inspiração Midjourney: ${midjourneyStyleGuidance}
+
+${ageDirectiveSystem}
 
 INSTRUÇÕES RIGOROSAS:
 1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}" e ao estilo sorteado "${selectedStyle.name}". NUNCA repita templos antigos ou orientalismo caricato.
-2. No "prompt_midjourney" (redigido em inglês cinematográfico e detalhado):
-   - Incorpore: ${selectedStyle.midjourneyGuidance}
+${
+  isKidsTheme
+    ? `2. FAIXA ETÁRIA INFANTIL (6 a 10 ANOS) OBRIGATÓRIA:
+   - Sujeito no prompt: ${
+     selectedStyle.id === 'documental_postural_sifu'
+       ? 'an experienced adult Kung Fu Master (Sifu) patiently guiding and correcting the martial stance of a young 7-year-old child student'
+       : 'authentic Brazilian children (aged 6 to 10 years old), little kids Kung Fu students, authentic focused expressions, dynamic children practicing...'
+   }
+   - Restrição obrigatória a incluir no prompt: "${negativeConstraints}"`
+    : ''
+}
+3. No "prompt_midjourney" (redigido em inglês cinematográfico e detalhado):
+   - Incorpore: ${midjourneyStyleGuidance}
    - Especifique: ${selectedStyle.camera}, ${selectedStyle.lighting}
    - Detalhe a ação, postura corporal precisa e expressão autêntica no Kwoon.
+   ${isKidsTheme ? `- Inclua a restrição negativa: "${negativeConstraints}"` : ''}
    - Finalize com: 8k resolution, photorealistic commercial sports photography, natural skin texture --ar 4:5 --v 6.1 --style raw
-3. Em "layout_diretrizes" (em Português do Brasil): descreva a hierarquia visual, tipografia sugerida, paleta e uso estratégico do espaço negativo.
+4. Em "layout_diretrizes" (em Português do Brasil): descreva a hierarquia visual, tipografia sugerida, paleta e uso estratégico do espaço negativo.
 
 Retorne um JSON com:
 {
@@ -478,9 +599,12 @@ Retorne um JSON com:
   }));
 
   const rawLayout = sanitizeKungFuTerms(data.layout_diretrizes) || 'Design contemporâneo de alto contraste com tipografia marcante e espaço negativo equilibrado.';
-  const rawPrompt =
+  
+  const basePrompt =
     sanitizeKungFuTerms(data.prompt_midjourney) ||
-    `${selectedStyle.midjourneyGuidance}, authentic martial artists in modern Kwoon, ${selectedStyle.camera}, ${selectedStyle.lighting}, photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
+    `${midjourneyStyleGuidance}, authentic martial artists in modern Kwoon, ${selectedStyle.camera}, ${selectedStyle.lighting}, ${negativeConstraints ? negativeConstraints + ', ' : ''}photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
+
+  const rawPrompt = enforceAgeRequirements(basePrompt, isKidsTheme, selectedStyle.id);
 
   const card = {
     id: 'card-4',
@@ -496,7 +620,7 @@ Retorne um JSON com:
     sections: [
       {
         label: 'Direção Visual Sorteada (Variabilidade Ativa)',
-        content: `🎨 ${selectedStyle.name} • Setup: ${selectedStyle.camera}`,
+        content: `🎨 ${selectedStyle.name} • ${isKidsTheme ? 'Faixa Etária: Infantil (6 a 10 anos)' : 'Faixa Etária: Geral / Adultos'} • Setup: ${selectedStyle.camera}`,
         type: 'highlight',
       },
       {
@@ -518,6 +642,7 @@ Retorne um JSON com:
     copyPayload: `[DIREÇÃO DE ARTE]
 Especialista: Rodrigo Fontes (${provider})
 Estilo Visual: ${selectedStyle.name}
+Faixa Etária Detectada: ${isKidsTheme ? 'Infantil (6 a 10 anos)' : 'Geral / Adultos'}
 Setup Técnico: ${selectedStyle.camera} | ${selectedStyle.angle}
 
 Cores:
@@ -532,7 +657,7 @@ ${rawPrompt}`,
 
   return {
     card,
-    rawData: { ...data, selectedStyle, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
+    rawData: { ...data, selectedStyle, isKidsTheme, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
     provider,
   };
 }
