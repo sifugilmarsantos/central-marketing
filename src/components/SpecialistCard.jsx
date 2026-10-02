@@ -170,7 +170,7 @@ export default function SpecialistCard({
                   <>
                     {card.stepNumber === 2
                       ? '🔄 Reescrever Variação de Copy'
-                      : '🔄 Recriar Nova Direção de Arte / Prompt'}
+                      : '🔄 Recriar Nova Direção de Arte'}
                   </>
                 )}
               </button>

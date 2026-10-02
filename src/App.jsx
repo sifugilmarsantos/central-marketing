@@ -308,12 +308,13 @@ export default function App() {
         );
         showToast(`✅ Variação de copy reescrita com sucesso (${res2.provider})!`);
       } else if (stepNumber === 4) {
-        showToast('🎨 Criando nova direção de arte e prompt visual exclusivo...');
+        showToast('🎨 Sorteando novo enquadramento visual e nova direção de arte...');
         const res4 = await executeStep4({
           theme: activeTheme,
           brandProfile,
           step1Data,
           isBrandActive,
+          forceNewStyle: true,
         });
         setCardsData((prev) =>
           prev.map((c) => (c.stepNumber === 4 ? res4.card : c))

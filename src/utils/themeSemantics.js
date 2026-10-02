@@ -30,8 +30,8 @@ export function extractThemeSemantics(theme = '', brandProfile = null) {
     audience = 'Mães e pais focados em foco escolar, respeito mútuo, disciplina e autoconfiança dos filhos';
     painPoint = 'tempo excessivo diante de telas, falta de concentração escolar, desmotivação e timidez';
     solution = 'treino marcial tradicional infantil que desenvolve postura, foco inabalável e respeito mútuo no tatame';
-    visualSubject = 'authentic Brazilian children (aged 6 to 10 years old) in authentic traditional Chinese Kung Fu martial arts uniforms (silk kung fu attire) practicing disciplined martial stances and focus posture inside clean contemporary Kwoon training hall, respectful martial salute or dynamic stance guided by an adult Master, authentic focused determined expressions';
-    negativeConstraints = 'no toys, no building blocks, no playground, no casual clothes, no distorted anatomy, no cartoon, focus strictly on young children martial arts training in traditional uniform';
+    visualSubject = 'authentic Brazilian children (aged 6 to 10 years old) in martial arts discipline, varied framings and attire';
+    negativeConstraints = 'no distorted anatomy, no cartoonish artifacts, no plastic skin, no blurry details';
   } else if (isSenior) {
     niche = 'Saúde & Bem-Estar para Terceira Idade';
     audience = 'Homens e mulheres da terceira idade (60 a 75 anos) e familiares que priorizam longevidade e autonomia';

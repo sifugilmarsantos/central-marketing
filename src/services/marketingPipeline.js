@@ -377,24 +377,233 @@ export const ART_DIRECTOR_STYLES = [
 ];
 
 /**
+ * 5 ENQUADRAMENTOS VISUAIS RADICAIS PARA TEMAS INFANTIS (CARD 04)
+ * Elimina o padrão repetitivo de "turma alinhada em base baixa frontal com mestre atrás"
+ */
+export const KIDS_FRAMING_STYLES = [
+  {
+    id: 'close_up_emocional',
+    key: 'A',
+    name: 'Close-Up Emocional & Determinação',
+    category: 'CLOSE-UP EMOCIONAL',
+    framingDescription: 'Foco no rosto determinado da criança ajustando a faixa ou respirando fundo',
+    camera: 'Lente 85mm f/1.4 (profundidade de campo rasa, foco cirúrgico no olhar)',
+    angle: 'Plano fechado intimista (close-up) na altura dos olhos da criança',
+    lighting: 'Iluminação suave natural com luz de recorte sutil nos cabelos, destacando expressão de maturidade',
+    paletteName: 'Foco & Maturidade Emocional',
+    negativeConstraints: 'no adults in frame, no distorted anatomy, no cartoon, no blurry eyes, focus strictly on young child facial determination',
+    midjourneyGuidance: 'Intimate cinematic emotional close-up portrait of an authentic Brazilian child (aged 7 to 9), intense focused and determined expression, delicately adjusting martial belt or taking a deep mindful breath, 85mm f/1.4 lens, shallow depth of field, creamy soft bokeh, gentle natural side lighting with subtle warm rim light, natural skin pores, pure determination and youthful maturity'
+  },
+  {
+    id: 'correcao_pedagogica_individual',
+    key: 'B',
+    name: 'Correção Pedagógica Individual & Respeito Mútuo',
+    category: 'CORREÇÃO PEDAGÓGICA INDIVIDUAL',
+    framingDescription: 'Instrutor abaixado na altura dos olhos da criança, orientando a postura com cuidado e respeito',
+    camera: 'Canon EOS R5 com lente 50mm f/1.2L USM',
+    angle: 'Plano lateral aconchegante, ângulo na altura dos olhos da criança agachada',
+    lighting: 'Luz difusa acolhedora de fim de tarde entrando pelas janelas do Kwoon contemporâneo',
+    paletteName: 'Mentoria, Afeto & Respeito',
+    negativeConstraints: 'no aggressive fighting, no chaotic background, no distorted hands, patient mentor and child only, no harsh shadows',
+    midjourneyGuidance: 'Warm pedagogical guidance scene, experienced patient adult martial arts instructor kneeling down at eye level with an authentic Brazilian young child student, gently and respectfully correcting arm and fist posture, cozy lateral medium shot at child eye-level, 50mm f/1.2L lens, warm ambient window light, genuine mutual respect and mentoring trust, emotional documentary atmosphere'
+  },
+  {
+    id: 'agilidade_diversao_dinamica',
+    key: 'C',
+    name: 'Agilidade, Coordenação Motora & Alegria Dinâmica',
+    category: 'AGILIDADE E DIVERSÃO DINÂMICA',
+    framingDescription: 'Crianças em salto de coordenação motora ou corrida de obstáculos no tatame',
+    camera: 'Sony A1 com lente 24mm f/1.4 GM (velocidade rápida 1/2000s congelando o movimento no ar)',
+    angle: 'Câmera ao nível do chão (ground-level worm eye view) olhando para cima',
+    lighting: 'Luz diurna vibrante e enérgica, feixes de luz cruzados no tatame limpo contemporâneo',
+    paletteName: 'Vitalidade, Agilidade & Alegria',
+    negativeConstraints: 'no clumsy falls, no dangerous obstacles, no messy background, high-energy clean athletic gym, no blurry motion',
+    midjourneyGuidance: 'High-energy motor coordination action photo, joyful Brazilian children executing dynamic athletic jump over obstacle course on clean martial arts training mat, ground-level low-angle perspective, shutter speed 1/2000s freezing mid-air kinetic motion, 24mm wide angle, vibrant natural daylight, candid smiles of achievement, athletic agility and infectious joy'
+  },
+  {
+    id: 'foco_cognitivo_escolar',
+    key: 'D',
+    name: 'Foco Cognitivo, Rendimento Escolar & Serenidade',
+    category: 'FOCO COGNITIVO / ESCOLAR',
+    framingDescription: 'Criança em mesa de estudo com postura impecável e livros, olhar sereno e focado',
+    camera: 'Fujifilm GFX 100 II com lente 63mm f/2.8 (nitidez impecável)',
+    angle: 'Plano médio em três quartos elegante e equilibrado',
+    lighting: 'Ambiente limpo e luminoso, luz suave de janela sobre a bancada de estudos',
+    paletteName: 'Disciplina Cognitiva & Foco Escolar',
+    negativeConstraints: 'no messy room, no toys, no distractions, no fatigue, serene intellectual focus, no cluttered desks',
+    midjourneyGuidance: 'Cognitive focus and academic discipline scene, authentic Brazilian child sitting at clean minimalist study desk with impeccable upright posture, open textbooks and notebook, serene focused and calm gaze, bright luminous modern room, morning daylight streaming, quiet concentration reflecting martial discipline applied to schooling, 63mm f/2.8 lens, pristine commercial photography'
+  },
+  {
+    id: 'poster_minimalista_espaco_negativo',
+    key: 'E',
+    name: 'Pôster Minimalista com Amplo Espaço Negativo',
+    category: 'PÔSTER MINIMALISTA COM ESPAÇO NEGATIVO',
+    framingDescription: 'Criança em postura marcial clássica no terço inferior direito, com 60% de espaço limpo para texto publicitário',
+    camera: 'Hasselblad H6D-100c com lente 100mm f/2.2',
+    angle: 'Composição assimétrica em regra dos terços com ampla área limpa',
+    lighting: 'Luz zenital dramática e elegante (overhead rim light) sobre fundo neutro sofisticado',
+    paletteName: 'Design Editorial & Espaço Negativo',
+    negativeConstraints: 'no centered subject, no cluttered background, generous negative space, no typography in raw render, no crowded elements',
+    midjourneyGuidance: 'Minimalist luxury advertising poster layout, young Brazilian child in crisp classical martial arts stance positioned in the bottom-right third of frame, generous 60% clean dark minimalist negative space left open for copy and headline, Hasselblad 100mm f/2.2, dramatic overhead studio spotlight and edge rim lighting, razor-sharp silhouette against clean backdrop'
+  }
+];
+
+/**
+ * 4 VARIAÇÕES DE UNIFORMES E CORES PARA CRIANÇAS
+ * Evita fixar sempre cetim preto com dragão dourado
+ */
+export const KIDS_UNIFORM_VARIATIONS = [
+  {
+    id: 'branco_classico',
+    name: 'Branco Clássico de Pureza & Graduação',
+    description: 'uniforme tradicional em branco puro de algodão',
+    promptFragment: 'pure crisp white classical martial arts cotton uniform, clean pristine white fabric with colored rank belt'
+  },
+  {
+    id: 'vermelho_tradicional',
+    name: 'Vermelho Tradicional de Energia & Vitalidade',
+    description: 'traje tradicional marcial em vermelho bordô elegante',
+    promptFragment: 'deep traditional crimson red martial arts uniform with neat trim, authentic cultural elegance'
+  },
+  {
+    id: 'azul_marcial',
+    name: 'Azul Marcial Sereno de Foco & Disciplina',
+    description: 'uniforme marcial azul royal contemporâneo',
+    promptFragment: 'royal martial blue contemporary uniform, breathable crisp fabric, contrasting black rank sash'
+  },
+  {
+    id: 'camiseta_clean_treino',
+    name: 'Camiseta Institucional Clean de Treino Funcional',
+    description: 'camiseta institucional clean de treino e calça marcial leve',
+    promptFragment: 'clean minimalist modern brand training t-shirt in heather grey or navy blue with lightweight martial trousers, comfortable athletic youth training look'
+  }
+];
+
+// Variáveis de controle de estado para forçar sorteios não repetitivos em recriações sucessivas
+let lastKidsFramingIndex = -1;
+let lastKidsUniformIndex = -1;
+let lastGenericStyleIndex = -1;
+
+export function getNextKidsFraming(forceDifferent = true) {
+  let idx;
+  if (forceDifferent && KIDS_FRAMING_STYLES.length > 1) {
+    do {
+      idx = Math.floor(Math.random() * KIDS_FRAMING_STYLES.length);
+    } while (idx === lastKidsFramingIndex);
+  } else {
+    idx = Math.floor(Math.random() * KIDS_FRAMING_STYLES.length);
+  }
+  lastKidsFramingIndex = idx;
+  return KIDS_FRAMING_STYLES[idx];
+}
+
+export function getNextKidsUniform(forceDifferent = true) {
+  let idx;
+  if (forceDifferent && KIDS_UNIFORM_VARIATIONS.length > 1) {
+    do {
+      idx = Math.floor(Math.random() * KIDS_UNIFORM_VARIATIONS.length);
+    } while (idx === lastKidsUniformIndex);
+  } else {
+    idx = Math.floor(Math.random() * KIDS_UNIFORM_VARIATIONS.length);
+  }
+  lastKidsUniformIndex = idx;
+  return KIDS_UNIFORM_VARIATIONS[idx];
+}
+
+export function getNextGenericStyle(forceDifferent = true) {
+  let idx;
+  if (forceDifferent && ART_DIRECTOR_STYLES.length > 1) {
+    do {
+      idx = Math.floor(Math.random() * ART_DIRECTOR_STYLES.length);
+    } while (idx === lastGenericStyleIndex);
+  } else {
+    idx = Math.floor(Math.random() * ART_DIRECTOR_STYLES.length);
+  }
+  lastGenericStyleIndex = idx;
+  return ART_DIRECTOR_STYLES[idx];
+}
+
+/**
  * ETAPA 4: Diretor de Arte
  */
-export async function executeStep4({ theme, brandProfile, step1Data, isBrandActive = true }) {
+export async function executeStep4({ theme, brandProfile, step1Data, isBrandActive = true, forceNewStyle = false }) {
   const effectiveBrand = isBrandActive ? brandProfile : null;
   const brandContext = getBrandContext(brandProfile, isBrandActive);
   const primaryColor = isBrandActive && brandProfile?.primary_color ? brandProfile.primary_color : '#111827';
   const accentColor = isBrandActive && brandProfile?.accent_color ? brandProfile.accent_color : '#EAB308';
 
   const semantics = extractThemeSemantics(theme, effectiveBrand);
-  const selectedStyle = ART_DIRECTOR_STYLES[Math.floor(Math.random() * ART_DIRECTOR_STYLES.length)];
+  const isKidsTheme = semantics.isKids || /(crian[çc]|infantil|kids|filh|escol|disciplin|mirim)/i.test(theme);
+
+  // Sorteio forçado entre os 5 enquadramentos infantis ou os 6 estilos genéricos
+  const selectedKidsFraming = isKidsTheme ? getNextKidsFraming(true) : null;
+  const selectedUniform = isKidsTheme ? getNextKidsUniform(true) : null;
+  const selectedStyle = isKidsTheme
+    ? {
+        id: selectedKidsFraming.id,
+        key: selectedKidsFraming.key,
+        name: `[Enquadramento ${selectedKidsFraming.key}] ${selectedKidsFraming.name}`,
+        category: selectedKidsFraming.category,
+        camera: selectedKidsFraming.camera,
+        angle: selectedKidsFraming.angle,
+        lighting: selectedKidsFraming.lighting,
+        paletteName: selectedKidsFraming.paletteName,
+        uniform: selectedUniform,
+        description: `${selectedKidsFraming.framingDescription} • Uniforme: ${selectedUniform.name}`,
+        midjourneyGuidance: `${selectedKidsFraming.midjourneyGuidance}, wearing ${selectedUniform.promptFragment}`,
+        negativeConstraints: selectedKidsFraming.negativeConstraints,
+      }
+    : getNextGenericStyle(true);
 
   const systemPrompt = `Você é Rodrigo Fontes, Diretor de Arte Sênior e Especialista em Criação Visual com IA (Midjourney v6.1 / Flux Pro) para Campanhas Publicitárias de Alta Performance.
 Sua missão é desenvolver a identidade visual, hierarquia de layout, paleta de cores precisa e um PROMPT CINEMATOGRÁFICO EM INGLÊS perfeitamente personalizado para a campanha.
 Nicho: ${semantics.niche}
-Sujeito Visual Inferido: ${semantics.visualSubject}
+${isKidsTheme ? `Enquadramento Sorteado: ${selectedStyle.name} (${selectedKidsFraming.category})\nUniforme: ${selectedUniform.name}` : `Sujeito Visual: ${semantics.visualSubject}`}
 Retorne estritamente um JSON com as chaves: "paleta" (array de 4 objetos com name e hex), "layout_diretrizes", "prompt_midjourney".`;
 
-  const prompt = `Defina a direção de arte e o prompt visual cinematográfico exclusivo para a campanha:
+  const prompt = isKidsTheme
+    ? `Defina a direção de arte e o prompt visual cinematográfico exclusivo para a campanha infantil:
+TEMA DA CAMPANHA: "${theme}"
+NICHO IDENTIFICADO: ${semantics.niche}
+OBJETIVO ESTRATÉGICO: ${step1Data.objetivo}
+FORMATO SUGERIDO: ${step1Data.formato}
+CORES INSTITUCIONAIS: Primária ${primaryColor}, Acento ${accentColor}
+${brandContext}
+
+ENQUADRAMENTO OBRIGATÓRIO SORTEADO:
+- Categoria: ${selectedKidsFraming.category} (${selectedKidsFraming.name})
+- Composição & Ação: ${selectedKidsFraming.framingDescription}
+- Câmera/Lente: ${selectedKidsFraming.camera}
+- Ângulo de Visão: ${selectedKidsFraming.angle}
+- Iluminação da Cena: ${selectedKidsFraming.lighting}
+- Variação de Uniforme Sorteada: ${selectedUniform.name} (${selectedUniform.description})
+- Restrições Negativas: ${selectedKidsFraming.negativeConstraints}
+
+INSTRUÇÕES RIGOROSAS:
+1. QUEBRA DE PADRÃO REPETITIVO:
+   - NUNCA gere a cena batida de turma alinhada em base baixa frontal com mestre atrás!
+   - Siga RIGOROSAMENTE a composição sorteada: "${selectedKidsFraming.framingDescription}".
+   - O vestuário DEVE ser: ${selectedUniform.description} (NÃO force cetim preto com dragão dourado).
+2. No "prompt_midjourney" (em inglês cinematográfico ultra-detalhado):
+   - Incorpore a composição do Enquadramento ${selectedKidsFraming.key}: ${selectedKidsFraming.midjourneyGuidance}
+   - Inclua o uniforme sorteado: ${selectedUniform.promptFragment}
+   - Especifique a câmera (${selectedKidsFraming.camera}), o ângulo (${selectedKidsFraming.angle}) e iluminação (${selectedKidsFraming.lighting})
+   - Inclua as restrições: ${selectedKidsFraming.negativeConstraints}
+   - Finalize com: 8k resolution, photorealistic commercial photography, natural textures --ar 4:5 --v 6.1 --style raw
+3. Em "layout_diretrizes" (em PT-BR): descreva hierarquia, tipografia, paleta e aproveitamento específico do Enquadramento ${selectedKidsFraming.key} (${selectedKidsFraming.name}).
+
+Retorne um JSON com:
+{
+  "paleta": [
+    { "name": "${selectedKidsFraming.paletteName} (Base)", "hex": "${primaryColor}" },
+    { "name": "${selectedKidsFraming.paletteName} (Destaque)", "hex": "${accentColor}" },
+    { "name": "Acento Dinâmico", "hex": "#06B6D4" },
+    { "name": "Contraste Puro", "hex": "#FFFFFF" }
+  ],
+  "layout_diretrizes": "Hierarquia visual detalhada, tipografia recomendada e composição aproveitando o enquadramento ${selectedKidsFraming.name} em Português do Brasil.",
+  "prompt_midjourney": "Cinematic photo prompt in English incorporating ${selectedKidsFraming.midjourneyGuidance}, wearing ${selectedUniform.promptFragment}, camera, lens, lighting, authentic atmosphere and parameters --ar 4:5 --v 6.1 --style raw"
+}`
+    : `Defina a direção de arte e o prompt visual cinematográfico exclusivo para a campanha:
 TEMA DA CAMPANHA: "${theme}"
 NICHO IDENTIFICADO: ${semantics.niche}
 SUJEITOS VISUAIS OBRIGATÓRIOS: ${semantics.visualSubject}
@@ -413,12 +622,9 @@ Inspiração Midjourney: ${selectedStyle.midjourneyGuidance}
 
 INSTRUÇÕES RIGOROSAS:
 1. Adapte a atmosfera visual EXCLUSIVAMENTE ao tema "${theme}".
-   - Se o tema envolver Kung Fu / artes marciais e crianças -> a imagem DEVE ser estritamente de crianças em uniforme tradicional (silk Kung Fu uniform) treinando no Kwoon (postura de foco, saudação ou movimento com mestre), NUNCA crianças brincando de blocos ou brinquedos.
    - Se o tema envolver padaria / confeitaria / alimentação -> inclua obrigatoriamente: "hygienic commercial kitchen setting, clean apron, professional baker standards, appetizing food photography".
-   - Se o tema for padaria -> mostre pães artesanais, padeiro, forno rústico, farinha no ar.
    - Se o tema for idosos / terceira idade -> mostre pessoas idosas ativas e saudáveis (60-75 anos).
    - Se o tema for médico / advogado -> mostre médicos ou advogados em consultório/escritório executivo moderno.
-   - Se o tema for crianças -> mostre crianças de 6 a 10 anos.
    - NUNCA force termos marciais a menos que o tema ou perfil ativo cite explicitamente!
 2. No "prompt_midjourney" (em inglês cinematográfico):
    - Comece descrevendo o sujeito visual: ${semantics.visualSubject}
@@ -455,16 +661,28 @@ Retorne um JSON com:
 
   const rawLayout = data.layout_diretrizes || `Design contemporâneo de alto impacto para ${semantics.niche}, com tipografia marcante e espaço negativo equilibrado.`;
   
-  let rawPrompt = data.prompt_midjourney ||
-    `Cinematic commercial photography of ${semantics.visualSubject}, ${selectedStyle.midjourneyGuidance}, ${selectedStyle.camera}, ${selectedStyle.lighting}, ${semantics.negativeConstraints}, photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
+  let rawPrompt = data.prompt_midjourney;
 
-  // Se por qualquer razão a IA externa omitiu entidades vitais, nós as garantimos no prompt
-  if (semantics.isMartialArts && semantics.isKids) {
-    if (!rawPrompt.toLowerCase().includes('kung fu') && !rawPrompt.toLowerCase().includes('martial')) {
-      rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
+  if (!rawPrompt || rawPrompt.length < 25) {
+    if (isKidsTheme) {
+      rawPrompt = `${selectedKidsFraming.midjourneyGuidance}, wearing ${selectedUniform.promptFragment}, ${selectedKidsFraming.camera}, ${selectedKidsFraming.lighting}, ${selectedKidsFraming.negativeConstraints}, 8k resolution, photorealistic commercial photography --ar 4:5 --v 6.1 --style raw`;
+    } else {
+      rawPrompt = `Cinematic commercial photography of ${semantics.visualSubject}, ${selectedStyle.midjourneyGuidance}, ${selectedStyle.camera}, ${selectedStyle.lighting}, ${semantics.negativeConstraints}, photorealistic 8k --ar 4:5 --v 6.1 --style raw`;
     }
-    if (!rawPrompt.toLowerCase().includes('no toys') && !rawPrompt.toLowerCase().includes('no building blocks')) {
-      rawPrompt = `${rawPrompt}, no toys, no building blocks, no playground, no casual clothes`;
+  }
+
+  // Se por qualquer razão a IA externa omitiu o enquadramento sorteado em tema infantil:
+  if (isKidsTheme) {
+    if (selectedKidsFraming.key === 'A' && !rawPrompt.toLowerCase().includes('close-up') && !rawPrompt.toLowerCase().includes('face')) {
+      rawPrompt = `Intimate emotional close-up portrait of focused child face, ${rawPrompt}`;
+    } else if (selectedKidsFraming.key === 'B' && !rawPrompt.toLowerCase().includes('instructor') && !rawPrompt.toLowerCase().includes('mentor')) {
+      rawPrompt = `Warm pedagogical guidance scene with instructor kneeling at eye level, ${rawPrompt}`;
+    } else if (selectedKidsFraming.key === 'C' && !rawPrompt.toLowerCase().includes('jump') && !rawPrompt.toLowerCase().includes('action') && !rawPrompt.toLowerCase().includes('dynamic')) {
+      rawPrompt = `High-energy dynamic coordination obstacle jump, ${rawPrompt}`;
+    } else if (selectedKidsFraming.key === 'D' && !rawPrompt.toLowerCase().includes('desk') && !rawPrompt.toLowerCase().includes('study')) {
+      rawPrompt = `Cognitive academic focus at clean study desk with open books, ${rawPrompt}`;
+    } else if (selectedKidsFraming.key === 'E' && !rawPrompt.toLowerCase().includes('negative space') && !rawPrompt.toLowerCase().includes('poster')) {
+      rawPrompt = `Minimalist advertising poster layout with 60% clean negative space, ${rawPrompt}`;
     }
   } else if (semantics.isBakery) {
     if (!rawPrompt.toLowerCase().includes('bread') && !rawPrompt.toLowerCase().includes('baker')) {
@@ -476,8 +694,6 @@ Retorne um JSON com:
   } else if (semantics.isSenior && !rawPrompt.toLowerCase().includes('senior') && !rawPrompt.toLowerCase().includes('elderly')) {
     rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
   } else if (semantics.isDoctorLawyer && !rawPrompt.toLowerCase().includes('doctor') && !rawPrompt.toLowerCase().includes('lawyer')) {
-    rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
-  } else if (semantics.isKids && !rawPrompt.toLowerCase().includes('children') && !rawPrompt.toLowerCase().includes('kids')) {
     rawPrompt = `${semantics.visualSubject}, ${rawPrompt}`;
   }
 
@@ -495,7 +711,9 @@ Retorne um JSON com:
     sections: [
       {
         label: 'Direção Visual Sorteada (Variabilidade Ativa)',
-        content: `🎨 ${selectedStyle.name} • Nicho: ${semantics.niche} • Setup: ${selectedStyle.camera}`,
+        content: isKidsTheme
+          ? `🎨 ${selectedStyle.name} • Uniforme: ${selectedUniform.name} • Setup: ${selectedStyle.camera}`
+          : `🎨 ${selectedStyle.name} • Nicho: ${semantics.niche} • Setup: ${selectedStyle.camera}`,
         type: 'highlight',
       },
       {
@@ -517,7 +735,7 @@ Retorne um JSON com:
     copyPayload: `[DIREÇÃO DE ARTE]
 Especialista: Rodrigo Fontes (${provider})
 Estilo Visual: ${selectedStyle.name}
-Nicho Comercial: ${semantics.niche}
+${isKidsTheme ? `Uniforme: ${selectedUniform.name}\n` : ''}Nicho Comercial: ${semantics.niche}
 Setup Técnico: ${selectedStyle.camera} | ${selectedStyle.angle}
 
 Cores:
@@ -532,7 +750,7 @@ ${rawPrompt}`,
 
   return {
     card,
-    rawData: { ...data, selectedStyle, semantics, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
+    rawData: { ...data, selectedStyle, selectedUniform, semantics, paleta: paletaFormatted, layout_diretrizes: rawLayout, prompt_midjourney: rawPrompt },
     provider,
   };
 }
